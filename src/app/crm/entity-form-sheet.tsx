@@ -20,6 +20,7 @@ import {
 import { cn } from '@/lib/utils';
 import type { Client, GroomingService, Pet } from '@/types/entities';
 
+import { getAppointmentFormOptions } from './appointment-actions';
 import { createClientAction, updateClientAction } from './clients/actions';
 import { createPetAction, getClientsForSelect, updatePetAction } from './pets/actions';
 import {
@@ -28,6 +29,7 @@ import {
 } from './settings/grooming-services/actions';
 
 type ClientOption = Awaited<ReturnType<typeof getClientsForSelect>>[number];
+type AppointmentFormOptions = Awaited<ReturnType<typeof getAppointmentFormOptions>>;
 
 export type EntityFormType = 'appointment' | 'client' | 'pet' | 'grooming-service';
 
@@ -58,6 +60,10 @@ export function EntityFormSheet({
   groomingService,
   client,
   pet,
+  open,
+  onOpenChange,
+  hideTrigger = false,
+  appointmentDate,
 }: {
   type: EntityFormType;
   actionLabel: string;
@@ -66,11 +72,16 @@ export function EntityFormSheet({
   groomingService?: GroomingService;
   client?: Client;
   pet?: Pet;
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
+  hideTrigger?: boolean;
+  appointmentDate?: string;
 }) {
-  const [isOpen, setIsOpen] = useState(false);
+  const [internalOpen, setInternalOpen] = useState(false);
   const [formType, setFormType] = useState<EntityFormType>(type);
   const [clientId, setClientId] = useState<string>();
   const [clients, setClients] = useState<ClientOption[]>();
+  const [appointmentOptions, setAppointmentOptions] = useState<AppointmentFormOptions>();
   const isEditing = Boolean(groomingService || client || pet);
   const copy = isEditing
     ? {
@@ -80,16 +91,22 @@ export function EntityFormSheet({
     : formCopy[formType];
 
   function handleOpenChange(open: boolean) {
-    setIsOpen(open);
+    setInternalOpen(open);
+    onOpenChange?.(open);
 
     if (open && type === 'pet') {
       void loadClients();
+    }
+
+    if (open && type === 'appointment') {
+      void loadAppointmentOptions();
     }
 
     if (!open) {
       setFormType(type);
       setClientId(undefined);
       setClients(undefined);
+      setAppointmentOptions(undefined);
     }
   }
 
@@ -97,27 +114,33 @@ export function EntityFormSheet({
     setClients(await getClientsForSelect());
   }
 
+  async function loadAppointmentOptions() {
+    setAppointmentOptions(await getAppointmentFormOptions());
+  }
+
   return (
-    <Sheet open={isOpen} onOpenChange={handleOpenChange}>
-      <SheetTrigger
-        render={
-          <Button
-            type='button'
-            size={mobile ? 'icon' : 'lg'}
-            variant={mobile ? 'ghost' : 'default'}
-            className={className}
-            aria-label={mobile ? actionLabel : undefined}
-            title={mobile ? actionLabel : undefined}
+    <Sheet open={open ?? internalOpen} onOpenChange={handleOpenChange}>
+      {!hideTrigger && (
+        <SheetTrigger
+          render={
+            <Button
+              type='button'
+              size={mobile ? 'icon' : 'lg'}
+              variant={mobile ? 'ghost' : 'default'}
+              className={className}
+              aria-label={mobile ? actionLabel : undefined}
+              title={mobile ? actionLabel : undefined}
+            />
+          }
+        >
+          <HugeiconsIcon
+            icon={isEditing ? Edit02Icon : Add01Icon}
+            data-icon='inline-start'
+            strokeWidth={2}
           />
-        }
-      >
-        <HugeiconsIcon
-          icon={isEditing ? Edit02Icon : Add01Icon}
-          data-icon='inline-start'
-          strokeWidth={2}
-        />
-        {!mobile && actionLabel}
-      </SheetTrigger>
+          {!mobile && actionLabel}
+        </SheetTrigger>
+      )}
       <SheetContent className='data-[side=right]:w-full sm:data-[side=right]:w-3/4 sm:data-[side=right]:max-w-lg'>
         <SheetHeader>
           <SheetTitle>{copy.title}</SheetTitle>
@@ -130,6 +153,8 @@ export function EntityFormSheet({
           groomingService={groomingService}
           client={client}
           pet={pet}
+          appointmentDate={appointmentDate}
+          appointmentOptions={appointmentOptions}
           onClientCreated={(createdClientId) => {
             setClientId(createdClientId);
             setFormType('pet');
@@ -150,6 +175,8 @@ function EntityForm({
   groomingService,
   client,
   pet,
+  appointmentDate,
+  appointmentOptions,
   onClientCreated,
   onPetCreated,
   onGroomingServiceCreated,
@@ -160,6 +187,8 @@ function EntityForm({
   groomingService?: GroomingService;
   client?: Client;
   pet?: Pet;
+  appointmentDate?: string;
+  appointmentOptions?: AppointmentFormOptions;
   onClientCreated: (clientId: string) => void;
   onPetCreated: () => void;
   onGroomingServiceCreated: () => void;
@@ -220,7 +249,13 @@ function EntityForm({
         {type === 'grooming-service' && (
           <GroomingServiceFields formId={formId} service={groomingService} />
         )}
-        {type === 'appointment' && <AppointmentFields formId={formId} />}
+        {type === 'appointment' && (
+          <AppointmentFields
+            formId={formId}
+            appointmentDate={appointmentDate}
+            options={appointmentOptions}
+          />
+        )}
       </div>
       <div className='border-t p-6'>
         <Button type='submit' className='w-full'>
@@ -464,27 +499,92 @@ function GroomingServiceFields({
   );
 }
 
-function AppointmentFields({ formId }: { formId: string }) {
+function AppointmentFields({
+  formId,
+  appointmentDate,
+  options,
+}: {
+  formId: string;
+  appointmentDate?: string;
+  options?: AppointmentFormOptions;
+}) {
+  const [selectedClientId, setSelectedClientId] = useState('');
+  const [selectedPetId, setSelectedPetId] = useState('');
+  const availablePets = selectedClientId
+    ? (options?.pets.filter((pet) => pet.clientId === selectedClientId) ?? [])
+    : (options?.pets ?? []);
+
   return (
     <>
       <FormField id={`${formId}-client`} label='Клиент' required>
-        <Input id={`${formId}-client`} name='clientId' placeholder='ID клиента' required />
+        <Select
+          id={`${formId}-client`}
+          name='clientId'
+          value={selectedClientId}
+          disabled={!options}
+          required
+          onChange={(event) => {
+            setSelectedClientId(event.target.value);
+            setSelectedPetId('');
+          }}
+        >
+          <option value=''>{options ? 'Выберите клиента' : 'Загрузка клиентов...'}</option>
+          {options?.clients.map((clientOption) => (
+            <option key={clientOption.id} value={clientOption.id}>
+              {formatClientOption(clientOption)}
+            </option>
+          ))}
+        </Select>
       </FormField>
       <FormField id={`${formId}-pet`} label='Питомец' required>
-        <Input id={`${formId}-pet`} name='petId' placeholder='ID питомца' required />
+        <Select
+          id={`${formId}-pet`}
+          name='petId'
+          value={selectedPetId}
+          disabled={!options}
+          required
+          onChange={(event) => {
+            const petId = event.target.value;
+            const pet = options?.pets.find((petOption) => petOption.id === petId);
+
+            setSelectedPetId(petId);
+
+            if (pet) {
+              setSelectedClientId(pet.clientId);
+            }
+          }}
+        >
+          <option value=''>
+            {!options
+              ? 'Загрузка питомцев...'
+              : availablePets.length
+                ? 'Выберите питомца'
+                : 'У клиента нет питомцев'}
+          </option>
+          {availablePets.map((petOption) => (
+            <option key={petOption.id} value={petOption.id}>
+              {petOption.breed ? `${petOption.name} — ${petOption.breed}` : petOption.name}
+            </option>
+          ))}
+        </Select>
       </FormField>
-      <FormField id={`${formId}-groomer`} label='Грумер'>
-        <Input id={`${formId}-groomer`} name='groomerId' placeholder='ID грумера' />
+      <FormField id={`${formId}-date`} label='Дата' required>
+        <DatePicker
+          key={appointmentDate}
+          id={`${formId}-date`}
+          name='scheduledDate'
+          defaultValue={appointmentDate}
+          futureYears={5}
+        />
       </FormField>
-      <FormField id={`${formId}-booking-request`} label='Заявка на запись'>
-        <Input id={`${formId}-booking-request`} name='bookingRequestId' placeholder='ID заявки' />
-      </FormField>
-      <FormField id={`${formId}-start`} label='Начало' required>
-        <Input id={`${formId}-start`} name='scheduledStart' type='datetime-local' required />
-      </FormField>
-      <FormField id={`${formId}-end`} label='Окончание' required>
-        <Input id={`${formId}-end`} name='scheduledEnd' type='datetime-local' required />
-      </FormField>
+      <div className='grid grid-cols-2 gap-3'>
+        <FormField id={`${formId}-start-time`} label='Начало' required>
+          <Input id={`${formId}-start-time`} name='scheduledStartTime' type='time' required />
+        </FormField>
+        <FormField id={`${formId}-end-time`} label='Окончание' required>
+          <Input id={`${formId}-end-time`} name='scheduledEndTime' type='time' required />
+        </FormField>
+      </div>
       <FormField id={`${formId}-location`} label='Место' required>
         <Select id={`${formId}-location`} name='locationType' required defaultValue='salon'>
           <option value='salon'>В салоне</option>

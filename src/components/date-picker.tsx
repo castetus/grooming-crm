@@ -19,11 +19,22 @@ const months = [
   'Декабрь',
 ];
 
-export function DatePicker({ id, name }: { id: string; name: string }) {
+export function DatePicker({
+  id,
+  name,
+  defaultValue = '',
+  futureYears = 0,
+}: {
+  id: string;
+  name: string;
+  defaultValue?: string;
+  futureYears?: number;
+}) {
   const currentYear = new Date().getFullYear();
-  const [year, setYear] = useState('');
-  const [month, setMonth] = useState('');
-  const [day, setDay] = useState('');
+  const [defaultYear = '', defaultMonth = '', defaultDay = ''] = defaultValue.split('-');
+  const [year, setYear] = useState(defaultYear);
+  const [month, setMonth] = useState(defaultMonth);
+  const [day, setDay] = useState(defaultDay ? String(Number(defaultDay)) : '');
   const daysInMonth = getDaysInMonth(year, month);
   const value = year && month && day ? `${year}-${month}-${day.padStart(2, '0')}` : '';
 
@@ -52,7 +63,10 @@ export function DatePicker({ id, name }: { id: string; name: string }) {
         onChange={(event) => updateYear(event.target.value)}
       >
         <option value=''>Год</option>
-        {Array.from({ length: 31 }, (_, index) => currentYear - index).map((optionYear) => (
+        {Array.from(
+          { length: 31 + futureYears },
+          (_, index) => currentYear + futureYears - index,
+        ).map((optionYear) => (
           <option key={optionYear} value={optionYear}>
             {optionYear}
           </option>
