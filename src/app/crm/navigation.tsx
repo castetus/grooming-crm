@@ -40,12 +40,16 @@ export function CrmNavigation() {
   return (
     <>
       <aside className="hidden border-r bg-sidebar lg:sticky lg:top-0 lg:flex lg:h-screen lg:flex-col lg:px-4 lg:py-6">
-        <p className="px-3 pb-6 text-lg font-semibold">Grooming CRM</p>
+        <Link href="/" className="px-3 pb-6 text-lg font-semibold">
+          Grooming CRM
+        </Link>
         <NavigationLinks pathname={pathname} />
       </aside>
 
       <header className="fixed inset-x-0 top-0 z-40 flex h-16 items-center justify-between border-b bg-background/95 px-4 backdrop-blur lg:hidden">
-        <p className="font-semibold">Grooming CRM</p>
+        <Link href="/" className="font-semibold">
+          Grooming CRM
+        </Link>
         <div className="flex items-center gap-1">
           {mobileAction && (
             <Button
