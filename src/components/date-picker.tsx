@@ -24,11 +24,15 @@ export function DatePicker({
   name,
   defaultValue = '',
   futureYears = 0,
+  ariaLabel = 'Дата',
+  onValueChange,
 }: {
   id: string;
   name: string;
   defaultValue?: string;
   futureYears?: number;
+  ariaLabel?: string;
+  onValueChange?: (value: string) => void;
 }) {
   const currentYear = new Date().getFullYear();
   const [defaultYear = '', defaultMonth = '', defaultDay = ''] = defaultValue.split('-');
@@ -39,26 +43,31 @@ export function DatePicker({
   const value = year && month && day ? `${year}-${month}-${day.padStart(2, '0')}` : '';
 
   function updateYear(nextYear: string) {
-    setYear(nextYear);
+    const nextDay = Number(day) > getDaysInMonth(nextYear, month) ? '' : day;
 
-    if (Number(day) > getDaysInMonth(nextYear, month)) {
-      setDay('');
-    }
+    setYear(nextYear);
+    setDay(nextDay);
+    onValueChange?.(getDateValue(nextYear, month, nextDay));
   }
 
   function updateMonth(nextMonth: string) {
-    setMonth(nextMonth);
+    const nextDay = Number(day) > getDaysInMonth(year, nextMonth) ? '' : day;
 
-    if (Number(day) > getDaysInMonth(year, nextMonth)) {
-      setDay('');
-    }
+    setMonth(nextMonth);
+    setDay(nextDay);
+    onValueChange?.(getDateValue(year, nextMonth, nextDay));
+  }
+
+  function updateDay(nextDay: string) {
+    setDay(nextDay);
+    onValueChange?.(getDateValue(year, month, nextDay));
   }
 
   return (
     <div className='grid grid-cols-[0.85fr_1.25fr_0.7fr] gap-2'>
       <DateSelect
         id={id}
-        aria-label='Год рождения'
+        aria-label={`${ariaLabel}: год`}
         value={year}
         onChange={(event) => updateYear(event.target.value)}
       >
@@ -75,7 +84,7 @@ export function DatePicker({
 
       <DateSelect
         id={`${id}-month`}
-        aria-label='Месяц рождения'
+        aria-label={`${ariaLabel}: месяц`}
         value={month}
         onChange={(event) => updateMonth(event.target.value)}
       >
@@ -93,10 +102,10 @@ export function DatePicker({
 
       <DateSelect
         id={`${id}-day`}
-        aria-label='День рождения'
+        aria-label={`${ariaLabel}: день`}
         value={day}
         disabled={!year || !month}
-        onChange={(event) => setDay(event.target.value)}
+        onChange={(event) => updateDay(event.target.value)}
       >
         <option value=''>День</option>
         {Array.from({ length: daysInMonth }, (_, index) => index + 1).map((optionDay) => (
@@ -109,6 +118,10 @@ export function DatePicker({
       <input type='hidden' name={name} value={value} />
     </div>
   );
+}
+
+function getDateValue(year: string, month: string, day: string) {
+  return year && month && day ? `${year}-${month}-${day.padStart(2, '0')}` : '';
 }
 
 function DateSelect({ className, ...props }: React.ComponentProps<'select'>) {

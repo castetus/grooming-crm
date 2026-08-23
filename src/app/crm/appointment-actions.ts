@@ -4,8 +4,12 @@ import { getClients } from '@/services/client.service';
 import { getActiveGroomingServices } from '@/services/grooming-services.service';
 import { getPets } from '@/services/pets.service';
 import {
+  cancelAppointment,
+  completeAppointment,
+  confirmAppointment,
   createAppointment,
   type CreateAppointmentInput,
+  restoreAppointment,
   updateAppointment,
 } from '@/services/appointments.service';
 import { revalidatePath } from 'next/cache';
@@ -41,6 +45,30 @@ export async function createAppointmentAction(formData: FormData) {
 
 export async function updateAppointmentAction(id: string, formData: FormData) {
   await updateAppointment(id, getAppointmentInput(formData));
+  revalidatePath('/crm');
+}
+
+export async function confirmAppointmentAction(id: string) {
+  await confirmAppointment(id);
+  revalidatePath('/crm');
+}
+
+export async function cancelAppointmentAction(id: string) {
+  await cancelAppointment(id);
+  revalidatePath('/crm');
+}
+
+export async function restoreAppointmentAction(id: string) {
+  await restoreAppointment(id);
+  revalidatePath('/crm');
+}
+
+export async function completeAppointmentAction(
+  id: string,
+  totalPrice: number,
+  notes: string | null,
+) {
+  await completeAppointment(id, { totalPrice, notes });
   revalidatePath('/crm');
 }
 
@@ -89,7 +117,7 @@ function getAppointmentInput(formData: FormData): CreateAppointmentInput {
 function getAppointmentStatus(formData: FormData) {
   const status = getString(formData, 'status');
 
-  if (status === 'completed' || status === 'cancelled' || status === 'no_show') {
+  if (status === 'pending') {
     return status;
   }
 

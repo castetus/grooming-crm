@@ -140,3 +140,30 @@ export async function getArchivedClients(): Promise<Client[]> {
 
   return data.map(mapClient);
 }
+
+export async function searchClients(
+  query: string,
+): Promise<Client[]> {
+  const supabase = await createClient();
+
+  const normalizedQuery = query.trim();
+
+  if (!normalizedQuery) {
+    return getClients();
+  }
+
+  const pattern = `%${normalizedQuery}%`;
+
+  const { data, error } = await supabase
+    .from("clients")
+    .select("*")
+    .is("archived_at", null)
+    .or(
+      `name.ilike.${pattern},phone.ilike.${pattern},telegram_username.ilike.${pattern}`,
+    )
+    .order("name");
+
+  if (error) throw error;
+
+  return data.map(mapClient);
+}

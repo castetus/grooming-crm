@@ -138,3 +138,21 @@ export async function deleteGroomingSession(id: string): Promise<void> {
 
   if (error) throw error;
 }
+
+export async function getGroomingSessionsByRange(
+  from: string,
+  to: string,
+): Promise<GroomingSession[]> {
+  const supabase = await createClient();
+
+  const { data, error } = await supabase
+    .from("grooming_sessions")
+    .select("*")
+    .gte("performed_at", from)
+    .lt("performed_at", to)
+    .order("performed_at", { ascending: false });
+
+  if (error) throw error;
+
+  return data.map(mapGroomingSession);
+}

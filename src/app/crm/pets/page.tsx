@@ -8,24 +8,33 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
+import { DebouncedSearchInput } from '@/components/debounced-search-input';
 import { getClients } from '@/services/client.service';
-import { getPets } from '@/services/pets.service';
+import { searchPets } from '@/services/pets.service';
 
 import { PageHeader } from '../page-header';
 import { EntityFormSheet } from '../entity-form-sheet';
 
-export default async function PetsPage() {
-  const [pets, clients] = await Promise.all([getPets(), getClients()]);
+export default async function PetsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ q?: string }>;
+}) {
+  const query = (await searchParams).q ?? '';
+  const [pets, clients] = await Promise.all([searchPets(query), getClients()]);
   const clientNames = new Map(clients.map((client) => [client.id, client.name]));
 
   return (
     <div className='space-y-6'>
       <PageHeader title='Питомцы' actionLabel='Добавить питомца' formType='pet' />
+      <DebouncedSearchInput key={query} defaultValue={query} placeholder='Найти питомца' />
 
       {pets.length === 0 ? (
         <div className='rounded-2xl border border-dashed bg-card px-6 py-12 text-center'>
-          <p className='font-medium'>Питомцев пока нет</p>
-          <p className='mt-1 text-sm text-muted-foreground'>Добавьте первого питомца.</p>
+          <p className='font-medium'>{query ? 'Питомцы не найдены' : 'Питомцев пока нет'}</p>
+          <p className='mt-1 text-sm text-muted-foreground'>
+            {query ? 'Попробуйте изменить запрос.' : 'Добавьте первого питомца.'}
+          </p>
         </div>
       ) : (
         <>

@@ -162,3 +162,26 @@ export async function getArchivedPets(): Promise<Pet[]> {
 
   return data.map(mapPet);
 }
+
+export async function searchPets(
+  query: string,
+): Promise<Pet[]> {
+  const supabase = await createClient();
+
+  const normalizedQuery = query.trim();
+
+  if (!normalizedQuery) {
+    return getPets();
+  }
+
+  const { data, error } = await supabase
+    .from("pets")
+    .select("*")
+    .is("archived_at", null)
+    .ilike("name", `%${normalizedQuery}%`)
+    .order("name");
+
+  if (error) throw error;
+
+  return data.map(mapPet);
+}

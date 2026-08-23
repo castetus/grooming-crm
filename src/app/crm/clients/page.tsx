@@ -8,22 +8,31 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import { getClients } from '@/services/client.service';
+import { DebouncedSearchInput } from '@/components/debounced-search-input';
+import { searchClients } from '@/services/client.service';
 
 import { PageHeader } from '../page-header';
 import { EntityFormSheet } from '../entity-form-sheet';
 
-export default async function ClientsPage() {
-  const clients = await getClients();
+export default async function ClientsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ q?: string }>;
+}) {
+  const query = (await searchParams).q ?? '';
+  const clients = await searchClients(query);
 
   return (
     <div className='space-y-6'>
       <PageHeader title='Клиенты' actionLabel='Добавить клиента' formType='client' />
+      <DebouncedSearchInput key={query} defaultValue={query} placeholder='Найти клиента' />
 
       {clients.length === 0 ? (
         <div className='rounded-2xl border border-dashed bg-card px-6 py-12 text-center'>
-          <p className='font-medium'>Клиентов пока нет</p>
-          <p className='mt-1 text-sm text-muted-foreground'>Добавьте первого клиента.</p>
+          <p className='font-medium'>{query ? 'Клиенты не найдены' : 'Клиентов пока нет'}</p>
+          <p className='mt-1 text-sm text-muted-foreground'>
+            {query ? 'Попробуйте изменить запрос.' : 'Добавьте первого клиента.'}
+          </p>
         </div>
       ) : (
         <>

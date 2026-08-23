@@ -8,9 +8,10 @@ import {
   Edit02Icon,
 } from '@hugeicons/core-free-icons';
 import { HugeiconsIcon } from '@hugeicons/react';
+import { Dialog } from '@base-ui/react/dialog';
 import Link from 'next/link';
 import type { ReactNode } from 'react';
-import { useEffect, useId, useState } from 'react';
+import { useEffect, useId, useState, useTransition } from 'react';
 
 import { Button, buttonVariants } from '@/components/ui/button';
 import { DatePicker } from '@/components/date-picker';
@@ -29,8 +30,12 @@ import { cn } from '@/lib/utils';
 import type { Appointment, Client, GroomingService, Pet } from '@/types/entities';
 
 import {
+  cancelAppointmentAction,
+  completeAppointmentAction,
+  confirmAppointmentAction,
   createAppointmentAction,
   getAppointmentFormOptions,
+  restoreAppointmentAction,
   updateAppointmentAction,
 } from './appointment-actions';
 import { createClientAction, updateClientAction } from './clients/actions';
@@ -285,12 +290,188 @@ function EntityForm({
           />
         )}
       </div>
-      <div className='border-t p-6'>
-        <Button type='submit' className='w-full'>
-          Сохранить
-        </Button>
-      </div>
+      {type === 'appointment' && appointment ? (
+        <AppointmentActions
+          appointment={appointment}
+          onStatusChanged={onAppointmentCreated}
+        />
+      ) : (
+        <div className='border-t p-6'>
+          <Button type='submit' className='w-full'>
+            Сохранить
+          </Button>
+        </div>
+      )}
     </form>
+  );
+}
+
+type StatusAction = 'confirm' | 'cancel' | 'restore' | 'complete';
+
+const statusActionCopy: Record<StatusAction, { title: string; description: string; label: string }> = {
+  confirm: {
+    title: 'Подтвердить запись?',
+    description: 'Запись получит статус «Подтверждена».',
+    label: 'Подтвердить',
+  },
+  cancel: {
+    title: 'Отменить запись?',
+    description: 'Запись будет отменена. Позже её можно будет восстановить.',
+    label: 'Отменить',
+  },
+  restore: {
+    title: 'Восстановить запись?',
+    description: 'Запись снова получит статус «Подтверждена».',
+    label: 'Восстановить',
+  },
+  complete: {
+    title: 'Завершить запись?',
+    description: 'Будет создана завершённая сессия груминга. Это действие нельзя отменить.',
+    label: 'Завершить',
+  },
+};
+
+function AppointmentActions({
+  appointment,
+  onStatusChanged,
+}: {
+  appointment: Appointment;
+  onStatusChanged: () => void;
+}) {
+  const [statusAction, setStatusAction] = useState<StatusAction>();
+  const [isPending, startTransition] = useTransition();
+
+  function applyStatusChange() {
+    if (!statusAction) {
+      return;
+    }
+
+    startTransition(async () => {
+      if (statusAction === 'confirm') {
+        await confirmAppointmentAction(appointment.id);
+      }
+
+      if (statusAction === 'cancel') {
+        await cancelAppointmentAction(appointment.id);
+      }
+
+      if (statusAction === 'restore') {
+        await restoreAppointmentAction(appointment.id);
+      }
+
+      if (statusAction === 'complete') {
+        await completeAppointmentAction(
+          appointment.id,
+          appointment.estimatedPrice ?? 0,
+          appointment.notes,
+        );
+      }
+
+      setStatusAction(undefined);
+      onStatusChanged();
+    });
+  }
+
+  if (appointment.status === 'completed') {
+    return null;
+  }
+
+  return (
+    <>
+      <div className="border-t p-6">
+        {appointment.status === 'pending' && (
+          <div className="grid grid-cols-2 gap-3">
+            <Button type="button" onClick={() => setStatusAction('confirm')}>
+              Подтвердить
+            </Button>
+            <Button
+              type="button"
+              variant="destructive"
+              onClick={() => setStatusAction('cancel')}
+            >
+              Отменить
+            </Button>
+          </div>
+        )}
+        {appointment.status === 'confirmed' && (
+          <div className="grid grid-cols-2 gap-3">
+            <Button type="button" onClick={() => setStatusAction('complete')}>
+              Завершить
+            </Button>
+            <Button
+              type="button"
+              variant="destructive"
+              onClick={() => setStatusAction('cancel')}
+            >
+              Отменить
+            </Button>
+          </div>
+        )}
+        {appointment.status === 'cancelled' && (
+          <Button
+            type="button"
+            className="w-full"
+            onClick={() => setStatusAction('restore')}
+          >
+            Восстановить
+          </Button>
+        )}
+      </div>
+      <StatusConfirmationDialog
+        action={statusAction}
+        pending={isPending}
+        onOpenChange={(open) => {
+          if (!open && !isPending) {
+            setStatusAction(undefined);
+          }
+        }}
+        onConfirm={applyStatusChange}
+      />
+    </>
+  );
+}
+
+function StatusConfirmationDialog({
+  action,
+  pending,
+  onOpenChange,
+  onConfirm,
+}: {
+  action?: StatusAction;
+  pending: boolean;
+  onOpenChange: (open: boolean) => void;
+  onConfirm: () => void;
+}) {
+  const copy = action ? statusActionCopy[action] : undefined;
+
+  return (
+    <Dialog.Root open={Boolean(action)} onOpenChange={onOpenChange}>
+      <Dialog.Portal>
+        <Dialog.Backdrop className="fixed inset-0 z-[60] bg-black/80 transition-opacity data-ending-style:opacity-0 data-starting-style:opacity-0" />
+        <Dialog.Popup className="fixed left-1/2 top-1/2 z-[60] w-[calc(100%-2rem)] max-w-sm -translate-x-1/2 -translate-y-1/2 rounded-2xl border bg-popover p-6 text-popover-foreground shadow-lg">
+          <Dialog.Title className="text-base font-medium">{copy?.title}</Dialog.Title>
+          <Dialog.Description className="mt-2 text-sm text-muted-foreground">
+            {copy?.description}
+          </Dialog.Description>
+          <div className="mt-6 flex justify-end gap-3">
+            <Dialog.Close
+              disabled={pending}
+              render={<Button type="button" variant="outline" />}
+            >
+              Назад
+            </Dialog.Close>
+            <Button
+              type="button"
+              variant={action === 'cancel' ? 'destructive' : 'default'}
+              disabled={pending}
+              onClick={onConfirm}
+            >
+              {copy?.label}
+            </Button>
+          </div>
+        </Dialog.Popup>
+      </Dialog.Portal>
+    </Dialog.Root>
   );
 }
 
@@ -806,18 +987,14 @@ function AppointmentFields({
           onChange={(event) => setManualPrice(event.target.value)}
         />
       </FormField>
-      <FormField id={`${formId}-status`} label='Статус'>
-        <Select
-          id={`${formId}-status`}
-          name='status'
-          defaultValue={appointment?.status ?? 'confirmed'}
-        >
-          <option value='confirmed'>Подтверждена</option>
-          <option value='completed'>Завершена</option>
-          <option value='cancelled'>Отменена</option>
-          <option value='no_show'>Неявка</option>
-        </Select>
-      </FormField>
+      {!appointment && (
+        <FormField id={`${formId}-status`} label='Статус'>
+          <Select id={`${formId}-status`} name='status' defaultValue='confirmed'>
+            <option value='pending'>Ожидает подтверждения</option>
+            <option value='confirmed'>Подтверждена</option>
+          </Select>
+        </FormField>
+      )}
       <FormField id={`${formId}-pet-notes`} label='Заметки о питомце'>
         <Textarea
           id={`${formId}-pet-notes`}
