@@ -115,7 +115,7 @@ function DateSelect({ className, ...props }: React.ComponentProps<'select'>) {
   return (
     <select
       className={cn(
-        'h-9 min-w-0 rounded-xl border border-input bg-transparent px-2 text-sm outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:cursor-not-allowed disabled:opacity-50',
+        'h-9 min-w-0 rounded-xl border border-input bg-white px-2 text-sm outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:cursor-not-allowed disabled:bg-muted/50 disabled:opacity-50 dark:bg-white dark:text-black dark:disabled:bg-muted/50 dark:disabled:text-foreground',
         className,
       )}
       {...props}

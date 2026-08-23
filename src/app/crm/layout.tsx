@@ -1,8 +1,20 @@
+import { redirect } from 'next/navigation';
 import type { ReactNode } from 'react';
+
+import { createClient } from '@/lib/supabase/server';
 
 import { CrmNavigation } from './navigation';
 
-export default function CrmLayout({ children }: { children: ReactNode }) {
+export default async function CrmLayout({ children }: { children: ReactNode }) {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    redirect('/login');
+  }
+
   return (
     <div className="min-h-screen bg-muted/30 lg:grid lg:grid-cols-[256px_1fr]">
       <CrmNavigation />

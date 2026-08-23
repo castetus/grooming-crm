@@ -97,6 +97,7 @@ export function EntityFormSheet({
   const [clients, setClients] = useState<ClientOption[]>();
   const [appointmentOptions, setAppointmentOptions] = useState<AppointmentFormOptions>();
   const isEditing = Boolean(groomingService || client || pet || appointment);
+  const isSheetOpen = open ?? internalOpen;
   const copy = isEditing
     ? {
         title: appointment
@@ -107,22 +108,18 @@ export function EntityFormSheet({
     : formCopy[formType];
 
   useEffect(() => {
-    if (open && type === 'appointment') {
+    if (isSheetOpen && type === 'appointment') {
       void getAppointmentFormOptions().then(setAppointmentOptions);
     }
-  }, [open, type]);
+
+    if (isSheetOpen && type === 'pet') {
+      void getClientsForSelect().then(setClients);
+    }
+  }, [isSheetOpen, type]);
 
   function handleOpenChange(open: boolean) {
     setInternalOpen(open);
     onOpenChange?.(open);
-
-    if (open && type === 'pet') {
-      void loadClients();
-    }
-
-    if (open && type === 'appointment') {
-      void loadAppointmentOptions();
-    }
 
     if (!open) {
       setFormType(type);
@@ -136,12 +133,8 @@ export function EntityFormSheet({
     setClients(await getClientsForSelect());
   }
 
-  async function loadAppointmentOptions() {
-    setAppointmentOptions(await getAppointmentFormOptions());
-  }
-
   return (
-    <Sheet open={open ?? internalOpen} onOpenChange={handleOpenChange}>
+    <Sheet open={isSheetOpen} onOpenChange={handleOpenChange}>
       {!hideTrigger && (
         <SheetTrigger
           render={
@@ -882,7 +875,7 @@ function Select({ className, ...props }: React.ComponentProps<'select'>) {
   return (
     <select
       className={cn(
-        'h-9 w-full rounded-xl border border-input bg-transparent px-3 text-sm outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50',
+        'h-9 w-full rounded-xl border border-input bg-white px-3 text-sm outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:bg-muted/50 disabled:opacity-50 dark:bg-white dark:text-black dark:disabled:bg-muted/50 dark:disabled:text-foreground',
         className,
       )}
       {...props}
@@ -894,7 +887,7 @@ function Textarea({ className, ...props }: React.ComponentProps<'textarea'>) {
   return (
     <textarea
       className={cn(
-        'min-h-24 w-full resize-y rounded-xl border border-input bg-transparent px-3 py-2 text-sm outline-none placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50',
+        'min-h-24 w-full resize-y rounded-xl border border-input bg-white px-3 py-2 text-sm outline-none placeholder:text-muted-foreground read-only:bg-muted/50 focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:bg-muted/50 disabled:opacity-50 dark:bg-white dark:text-black dark:read-only:bg-muted/50 dark:read-only:text-foreground dark:disabled:bg-muted/50 dark:disabled:text-foreground',
         className,
       )}
       {...props}
