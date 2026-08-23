@@ -30,6 +30,7 @@ export type AppointmentStatus =
     createdAt: string;
     updatedAt: string;
     archivedAt: string | null;
+    photoPublicationConsent: boolean;
   }
 
   export interface Pet {
@@ -46,6 +47,7 @@ export type AppointmentStatus =
     createdAt: string;
     updatedAt: string;
     archivedAt: string | null;
+    photoPath: string | null;
   }
 
   export interface Groomer {
@@ -133,4 +135,13 @@ export interface CompleteAppointmentInput {
   totalPrice: number;
   groomingDetails?: string | null;
   notes?: string | null;
+}
+
+export interface GroomingSessionPhoto {
+  id: string;
+  groomingSessionId: string;
+  storagePath: string;
+  published: boolean;
+  sortOrder: number;
+  createdAt: string;
 }

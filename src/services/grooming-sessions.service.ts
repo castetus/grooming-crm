@@ -156,3 +156,12 @@ export async function getGroomingSessionsByRange(
 
   return data.map(mapGroomingSession);
 }
+
+export interface GroomingSessionPhoto {
+  id: string;
+  groomingSessionId: string;
+  storagePath: string;
+  published: boolean;
+  sortOrder: number;
+  createdAt: string;
+}

@@ -6,6 +6,7 @@ import type {
   GroomingSession,
   GroomingService,
 } from '@/types/entities';
+import { GroomingSessionPhoto } from './grooming-sessions.service';
 
 export function mapClient(row: any): Client {
   return {
@@ -20,6 +21,7 @@ export function mapClient(row: any): Client {
     createdAt: row.created_at,
     updatedAt: row.updated_at,
     archivedAt: row.archived_at,
+    photoPublicationConsent: row.photo_publication_consent,
   };
 }
 
@@ -38,6 +40,7 @@ export function mapPet(row: any): Pet {
     createdAt: row.created_at,
     updatedAt: row.updated_at,
     archivedAt: row.archived_at,
+    photoPath: row.photo_path,
   };
 }
 
@@ -96,5 +99,18 @@ export function mapGroomingService(row: any): GroomingService {
     active: row.active,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
+  };
+}
+
+export function mapGroomingSessionPhoto(
+  row: any,
+): GroomingSessionPhoto {
+  return {
+    id: row.id,
+    groomingSessionId: row.grooming_session_id,
+    storagePath: row.storage_path,
+    published: row.published,
+    sortOrder: row.sort_order,
+    createdAt: row.created_at,
   };
 }
