@@ -1,16 +1,22 @@
-import { Add01Icon } from '@hugeicons/core-free-icons';
-import { HugeiconsIcon } from '@hugeicons/react';
+import { EntityFormSheet, type EntityFormType } from './entity-form-sheet';
 
-import { Button } from '@/components/ui/button';
-
-export function PageHeader({ title, actionLabel }: { title: string; actionLabel: string }) {
+export function PageHeader({
+  title,
+  actionLabel,
+  formType,
+}: {
+  title: string;
+  actionLabel: string;
+  formType: EntityFormType;
+}) {
   return (
     <div className='flex items-center justify-between'>
       <h1 className='text-2xl font-semibold tracking-tight'>{title}</h1>
-      <Button type='button' size='lg' className='hidden lg:inline-flex'>
-        <HugeiconsIcon icon={Add01Icon} data-icon='inline-start' strokeWidth={2} />
-        {actionLabel}
-      </Button>
+      <EntityFormSheet
+        type={formType}
+        actionLabel={actionLabel}
+        className='hidden lg:inline-flex'
+      />
     </div>
   );
 }

@@ -1,3 +1,11 @@
+import { PageHeader } from '../../page-header';
+
 export default function GroomingServicesPage() {
-  return <h1 className='text-2xl font-semibold tracking-tight'>Справочник услуг</h1>;
+  return (
+    <PageHeader
+      title='Справочник услуг'
+      actionLabel='Добавить услугу'
+      formType='grooming-service'
+    />
+  );
 }

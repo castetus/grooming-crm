@@ -1,7 +1,6 @@
 'use client';
 
 import {
-  Add01Icon,
   Calendar03Icon,
   Cancel01Icon,
   HistoryIcon,
@@ -18,6 +17,8 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 
+import { EntityFormSheet, type EntityFormType } from './entity-form-sheet';
+
 const navigationItems = [
   { label: 'Календарь', href: '/crm', icon: Calendar03Icon },
   { label: 'Клиенты', href: '/crm/clients', icon: UserGroupIcon },
@@ -26,10 +27,15 @@ const navigationItems = [
   { label: 'Настройки', href: '/crm/settings', icon: Settings01Icon },
 ];
 
-const mobileActions = [
-  { href: '/crm', label: 'Добавить запись' },
-  { href: '/crm/clients', label: 'Добавить клиента' },
-  { href: '/crm/pets', label: 'Добавить питомца' },
+const mobileActions: { href: string; label: string; type: EntityFormType }[] = [
+  { href: '/crm', label: 'Добавить запись', type: 'appointment' },
+  { href: '/crm/clients', label: 'Добавить клиента', type: 'client' },
+  { href: '/crm/pets', label: 'Добавить питомца', type: 'pet' },
+  {
+    href: '/crm/settings/grooming-services',
+    label: 'Добавить услугу',
+    type: 'grooming-service',
+  },
 ];
 
 export function CrmNavigation() {
@@ -52,15 +58,11 @@ export function CrmNavigation() {
         </Link>
         <div className="flex items-center gap-1">
           {mobileAction && (
-            <Button
-              type="button"
-              variant="ghost"
-              size="icon"
-              aria-label={mobileAction.label}
-              title={mobileAction.label}
-            >
-              <HugeiconsIcon icon={Add01Icon} strokeWidth={2} />
-            </Button>
+            <EntityFormSheet
+              type={mobileAction.type}
+              actionLabel={mobileAction.label}
+              mobile
+            />
           )}
           <Button
             variant="ghost"
