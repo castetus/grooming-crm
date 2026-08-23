@@ -1,12 +1,18 @@
 'use client';
 
-import { Add01Icon, Edit02Icon } from '@hugeicons/core-free-icons';
+import {
+  Add01Icon,
+  ArrowDown01Icon,
+  Cancel01Icon,
+  Edit02Icon,
+} from '@hugeicons/core-free-icons';
 import { HugeiconsIcon } from '@hugeicons/react';
 import type { ReactNode } from 'react';
-import { useId, useState } from 'react';
+import { useEffect, useId, useState } from 'react';
 
 import { Button } from '@/components/ui/button';
 import { DatePicker } from '@/components/date-picker';
+import { TimePicker } from '@/components/time-picker';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import {
@@ -89,6 +95,12 @@ export function EntityFormSheet({
         description: 'Измените данные и сохраните форму.',
       }
     : formCopy[formType];
+
+  useEffect(() => {
+    if (open && type === 'appointment') {
+      void getAppointmentFormOptions().then(setAppointmentOptions);
+    }
+  }, [open, type]);
 
   function handleOpenChange(open: boolean) {
     setInternalOpen(open);
@@ -510,9 +522,20 @@ function AppointmentFields({
 }) {
   const [selectedClientId, setSelectedClientId] = useState('');
   const [selectedPetId, setSelectedPetId] = useState('');
+  const [selectedServiceIds, setSelectedServiceIds] = useState<string[]>([]);
+  const [manualPrice, setManualPrice] = useState('');
+  const [isServiceMenuOpen, setIsServiceMenuOpen] = useState(false);
+  const [locationType, setLocationType] = useState<'salon' | 'mobile'>('salon');
   const availablePets = selectedClientId
     ? (options?.pets.filter((pet) => pet.clientId === selectedClientId) ?? [])
     : (options?.pets ?? []);
+  const selectedServices =
+    options?.services.filter((service) => selectedServiceIds.includes(service.id)) ?? [];
+  const selectedPet = options?.pets.find((pet) => pet.id === selectedPetId);
+  const calculatedPrice = selectedServices.reduce(
+    (total, service) => total + (service.defaultPrice ?? 0),
+    0,
+  );
 
   return (
     <>
@@ -579,23 +602,134 @@ function AppointmentFields({
       </FormField>
       <div className='grid grid-cols-2 gap-3'>
         <FormField id={`${formId}-start-time`} label='Начало' required>
-          <Input id={`${formId}-start-time`} name='scheduledStartTime' type='time' required />
+          <TimePicker id={`${formId}-start-time`} name='scheduledStartTime' required />
         </FormField>
         <FormField id={`${formId}-end-time`} label='Окончание' required>
-          <Input id={`${formId}-end-time`} name='scheduledEndTime' type='time' required />
+          <TimePicker id={`${formId}-end-time`} name='scheduledEndTime' required />
         </FormField>
       </div>
       <FormField id={`${formId}-location`} label='Место' required>
-        <Select id={`${formId}-location`} name='locationType' required defaultValue='salon'>
+        <Select
+          id={`${formId}-location`}
+          name='locationType'
+          value={locationType}
+          required
+          onChange={(event) =>
+            setLocationType(event.target.value === 'mobile' ? 'mobile' : 'salon')
+          }
+        >
           <option value='salon'>В салоне</option>
           <option value='mobile'>С выездом</option>
         </Select>
       </FormField>
-      <FormField id={`${formId}-address`} label='Адрес'>
-        <Input id={`${formId}-address`} name='address' />
+      {locationType === 'mobile' && (
+        <FormField id={`${formId}-address`} label='Адрес' required>
+          <Input id={`${formId}-address`} name='address' required />
+        </FormField>
+      )}
+      <FormField id={`${formId}-services`} label='Услуги'>
+        <div className='relative'>
+          <Button
+            id={`${formId}-services`}
+            type='button'
+            variant='outline'
+            className='w-full'
+            aria-expanded={isServiceMenuOpen}
+            onClick={() => setIsServiceMenuOpen(!isServiceMenuOpen)}
+          >
+            Добавить услугу
+          </Button>
+          {isServiceMenuOpen && (
+            <div className='absolute inset-x-0 top-full z-30 mt-2 max-h-56 overflow-y-auto rounded-xl border bg-popover p-1 text-popover-foreground shadow-lg'>
+              {options?.services.length ? (
+                options.services.map((service) => {
+                  const isSelected = selectedServiceIds.includes(service.id);
+
+                  return (
+                    <button
+                      key={service.id}
+                      type='button'
+                      disabled={isSelected}
+                      className='flex w-full items-center justify-between gap-4 rounded-lg px-3 py-2 text-left text-sm hover:bg-muted disabled:opacity-50'
+                      onClick={() => {
+                        setSelectedServiceIds([...selectedServiceIds, service.id]);
+                        setIsServiceMenuOpen(false);
+                      }}
+                    >
+                      <span>{service.name}</span>
+                      <span className='shrink-0 text-muted-foreground'>
+                        {formatServicePrice(service.defaultPrice)}
+                      </span>
+                    </button>
+                  );
+                })
+              ) : (
+                <p className='px-3 py-2 text-sm text-muted-foreground'>
+                  {options ? 'Услуг пока нет' : 'Загрузка услуг...'}
+                </p>
+              )}
+            </div>
+          )}
+        </div>
+
+        {selectedServices.length > 0 && (
+          <div className='flex min-h-11 flex-wrap gap-2 rounded-xl border border-input p-2'>
+            {selectedServices.map((service) => (
+              <span
+                key={service.id}
+                className='inline-flex items-center gap-1 rounded-full bg-secondary py-1 pl-3 pr-1 text-sm text-secondary-foreground'
+              >
+                {service.name}
+                <button
+                  type='button'
+                  className='flex size-6 items-center justify-center rounded-full hover:bg-foreground/10'
+                  aria-label={`Удалить услугу «${service.name}»`}
+                  onClick={() => {
+                    setSelectedServiceIds(
+                      selectedServiceIds.filter((serviceId) => serviceId !== service.id),
+                    );
+                  }}
+                >
+                  <HugeiconsIcon icon={Cancel01Icon} className='size-3.5' strokeWidth={2} />
+                </button>
+                <input type='hidden' name='serviceIds' value={service.id} />
+              </span>
+            ))}
+          </div>
+        )}
       </FormField>
-      <FormField id={`${formId}-price`} label='Предварительная стоимость'>
-        <Input id={`${formId}-price`} name='estimatedPrice' type='number' min='0' step='0.01' />
+      <FormField id={`${formId}-calculated-price`} label='Предварительная стоимость'>
+        <Input
+          id={`${formId}-calculated-price`}
+          type='number'
+          min='0'
+          step='0.01'
+          value={calculatedPrice}
+          readOnly
+        />
+      </FormField>
+      <div className='-my-3 flex justify-center'>
+        <Button
+          type='button'
+          variant='ghost'
+          size='icon'
+          aria-label='Подставить предварительную стоимость в итоговую'
+          title='Подставить предварительную стоимость'
+          onClick={() => setManualPrice(String(calculatedPrice))}
+        >
+          <HugeiconsIcon icon={ArrowDown01Icon} strokeWidth={2} />
+        </Button>
+      </div>
+      <FormField id={`${formId}-price`} label='Итоговая стоимость'>
+        <Input
+          id={`${formId}-price`}
+          name='estimatedPrice'
+          type='number'
+          min='0'
+          step='0.01'
+          value={manualPrice}
+          onChange={(event) => setManualPrice(event.target.value)}
+        />
       </FormField>
       <FormField id={`${formId}-status`} label='Статус'>
         <Select id={`${formId}-status`} name='status' defaultValue='confirmed'>
@@ -604,6 +738,14 @@ function AppointmentFields({
           <option value='cancelled'>Отменена</option>
           <option value='no_show'>Неявка</option>
         </Select>
+      </FormField>
+      <FormField id={`${formId}-pet-notes`} label='Заметки о питомце'>
+        <Textarea
+          id={`${formId}-pet-notes`}
+          value={selectedPet?.notes ?? ''}
+          placeholder={selectedPetId ? 'Заметок о питомце нет' : 'Сначала выберите питомца'}
+          readOnly
+        />
       </FormField>
       <FormField id={`${formId}-notes`} label='Заметки'>
         <Textarea id={`${formId}-notes`} name='notes' />
@@ -632,6 +774,10 @@ function FormField({
       {children}
     </div>
   );
+}
+
+function formatServicePrice(price: number | null) {
+  return price === null ? 'Без цены' : new Intl.NumberFormat('ru-RU').format(price);
 }
 
 function Select({ className, ...props }: React.ComponentProps<'select'>) {
