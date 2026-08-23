@@ -6,6 +6,7 @@ import type { ReactNode } from 'react';
 import { useId, useState } from 'react';
 
 import { Button } from '@/components/ui/button';
+import { DatePicker } from '@/components/date-picker';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import {
@@ -331,7 +332,16 @@ function PetFields({
         <Input id={`${formId}-breed`} name='breed' defaultValue={pet?.breed ?? ''} />
       </FormField>
       <FormField id={`${formId}-birth-date`} label='Дата рождения'>
-        <Input id={`${formId}-birth-date`} name='birthDate' type='date' defaultValue={pet?.birthDate ?? ''} />
+        {pet ? (
+          <Input
+            id={`${formId}-birth-date`}
+            name='birthDate'
+            type='date'
+            defaultValue={pet.birthDate ?? ''}
+          />
+        ) : (
+          <DatePicker id={`${formId}-birth-date`} name='birthDate' />
+        )}
       </FormField>
       <FormField id={`${formId}-sex`} label='Пол' required>
         <Select id={`${formId}-sex`} name='sex' required defaultValue={pet?.sex ?? 'male'}>
