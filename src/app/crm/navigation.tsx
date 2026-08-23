@@ -53,7 +53,7 @@ export function CrmNavigation() {
       </aside>
 
       <header className="fixed inset-x-0 top-0 z-40 flex h-16 items-center justify-between border-b bg-background/95 px-4 backdrop-blur lg:hidden">
-        <Link href="/" className="font-semibold">
+        <Link href="/crm" className="font-semibold">
           Grooming CRM
         </Link>
         <div className="flex items-center gap-1">

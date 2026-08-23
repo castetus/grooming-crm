@@ -2,15 +2,17 @@
 
 import {
   Add01Icon,
-  ArrowDown01Icon,
+  ArrowDown02Icon,
+  ArrowUpRight01Icon,
   Cancel01Icon,
   Edit02Icon,
 } from '@hugeicons/core-free-icons';
 import { HugeiconsIcon } from '@hugeicons/react';
+import Link from 'next/link';
 import type { ReactNode } from 'react';
 import { useEffect, useId, useState } from 'react';
 
-import { Button } from '@/components/ui/button';
+import { Button, buttonVariants } from '@/components/ui/button';
 import { DatePicker } from '@/components/date-picker';
 import { TimePicker } from '@/components/time-picker';
 import { Input } from '@/components/ui/input';
@@ -24,9 +26,13 @@ import {
   SheetTrigger,
 } from '@/components/ui/sheet';
 import { cn } from '@/lib/utils';
-import type { Client, GroomingService, Pet } from '@/types/entities';
+import type { Appointment, Client, GroomingService, Pet } from '@/types/entities';
 
-import { getAppointmentFormOptions } from './appointment-actions';
+import {
+  createAppointmentAction,
+  getAppointmentFormOptions,
+  updateAppointmentAction,
+} from './appointment-actions';
 import { createClientAction, updateClientAction } from './clients/actions';
 import { createPetAction, getClientsForSelect, updatePetAction } from './pets/actions';
 import {
@@ -70,6 +76,7 @@ export function EntityFormSheet({
   onOpenChange,
   hideTrigger = false,
   appointmentDate,
+  appointment,
 }: {
   type: EntityFormType;
   actionLabel: string;
@@ -82,16 +89,19 @@ export function EntityFormSheet({
   onOpenChange?: (open: boolean) => void;
   hideTrigger?: boolean;
   appointmentDate?: string;
+  appointment?: Appointment;
 }) {
   const [internalOpen, setInternalOpen] = useState(false);
   const [formType, setFormType] = useState<EntityFormType>(type);
   const [clientId, setClientId] = useState<string>();
   const [clients, setClients] = useState<ClientOption[]>();
   const [appointmentOptions, setAppointmentOptions] = useState<AppointmentFormOptions>();
-  const isEditing = Boolean(groomingService || client || pet);
+  const isEditing = Boolean(groomingService || client || pet || appointment);
   const copy = isEditing
     ? {
-        title: `Редактирование: ${groomingService?.name ?? client?.name ?? pet?.name ?? ''}`,
+        title: appointment
+          ? 'Редактирование записи'
+          : `Редактирование: ${groomingService?.name ?? client?.name ?? pet?.name ?? ''}`,
         description: 'Измените данные и сохраните форму.',
       }
     : formCopy[formType];
@@ -166,6 +176,7 @@ export function EntityFormSheet({
           client={client}
           pet={pet}
           appointmentDate={appointmentDate}
+          appointment={appointment}
           appointmentOptions={appointmentOptions}
           onClientCreated={(createdClientId) => {
             setClientId(createdClientId);
@@ -174,6 +185,7 @@ export function EntityFormSheet({
           }}
           onPetCreated={() => handleOpenChange(false)}
           onGroomingServiceCreated={() => handleOpenChange(false)}
+          onAppointmentCreated={() => handleOpenChange(false)}
         />
       </SheetContent>
     </Sheet>
@@ -188,10 +200,12 @@ function EntityForm({
   client,
   pet,
   appointmentDate,
+  appointment,
   appointmentOptions,
   onClientCreated,
   onPetCreated,
   onGroomingServiceCreated,
+  onAppointmentCreated,
 }: {
   type: EntityFormType;
   clientId?: string;
@@ -200,15 +214,26 @@ function EntityForm({
   client?: Client;
   pet?: Pet;
   appointmentDate?: string;
+  appointment?: Appointment;
   appointmentOptions?: AppointmentFormOptions;
   onClientCreated: (clientId: string) => void;
   onPetCreated: () => void;
   onGroomingServiceCreated: () => void;
+  onAppointmentCreated: () => void;
 }) {
   const formId = useId();
 
   async function handleAction(formData: FormData) {
     if (type !== 'client') {
+      if (type === 'appointment') {
+        if (appointment) {
+          await updateAppointmentAction(appointment.id, formData);
+        } else {
+          await createAppointmentAction(formData);
+        }
+        onAppointmentCreated();
+      }
+
       if (type === 'pet') {
         if (pet) {
           await updatePetAction(pet.id, formData);
@@ -239,14 +264,11 @@ function EntityForm({
     }
   }
 
-  const action = type === 'appointment' ? undefined : handleAction;
-
   return (
     <form
       className='flex min-h-0 flex-1 flex-col'
-      action={action}
+      action={handleAction}
       autoComplete='off'
-      onSubmit={action ? undefined : (event) => event.preventDefault()}
     >
       <div className='flex-1 space-y-5 overflow-y-auto px-6 pb-6'>
         {type === 'client' && <ClientFields formId={formId} client={client} />}
@@ -265,6 +287,7 @@ function EntityForm({
           <AppointmentFields
             formId={formId}
             appointmentDate={appointmentDate}
+            appointment={appointment}
             options={appointmentOptions}
           />
         )}
@@ -515,17 +538,30 @@ function AppointmentFields({
   formId,
   appointmentDate,
   options,
+  appointment,
 }: {
   formId: string;
   appointmentDate?: string;
   options?: AppointmentFormOptions;
+  appointment?: Appointment;
 }) {
-  const [selectedClientId, setSelectedClientId] = useState('');
-  const [selectedPetId, setSelectedPetId] = useState('');
+  const [selectedClientId, setSelectedClientId] = useState(appointment?.clientId ?? '');
+  const [selectedPetId, setSelectedPetId] = useState(appointment?.petId ?? '');
   const [selectedServiceIds, setSelectedServiceIds] = useState<string[]>([]);
-  const [manualPrice, setManualPrice] = useState('');
+  const [manualPrice, setManualPrice] = useState(
+    appointment?.estimatedPrice === null || appointment?.estimatedPrice === undefined
+      ? ''
+      : String(appointment.estimatedPrice),
+  );
   const [isServiceMenuOpen, setIsServiceMenuOpen] = useState(false);
-  const [locationType, setLocationType] = useState<'salon' | 'mobile'>('salon');
+  const [locationType, setLocationType] = useState<'salon' | 'mobile'>(
+    appointment?.locationType ?? 'salon',
+  );
+  const start = appointment ? new Date(appointment.scheduledStart) : undefined;
+  const end = appointment ? new Date(appointment.scheduledEnd) : undefined;
+  const initialStartTime = start ? formatFormTime(start) : '';
+  const [startTime, setStartTime] = useState(initialStartTime);
+  const selectedDate = appointmentDate ?? (start ? formatFormDate(start) : undefined);
   const availablePets = selectedClientId
     ? (options?.pets.filter((pet) => pet.clientId === selectedClientId) ?? [])
     : (options?.pets ?? []);
@@ -540,72 +576,111 @@ function AppointmentFields({
   return (
     <>
       <FormField id={`${formId}-client`} label='Клиент' required>
-        <Select
-          id={`${formId}-client`}
-          name='clientId'
-          value={selectedClientId}
-          disabled={!options}
-          required
-          onChange={(event) => {
-            setSelectedClientId(event.target.value);
-            setSelectedPetId('');
-          }}
-        >
-          <option value=''>{options ? 'Выберите клиента' : 'Загрузка клиентов...'}</option>
-          {options?.clients.map((clientOption) => (
-            <option key={clientOption.id} value={clientOption.id}>
-              {formatClientOption(clientOption)}
-            </option>
-          ))}
-        </Select>
+        <div className='flex gap-2'>
+          <Select
+            id={`${formId}-client`}
+            name='clientId'
+            value={selectedClientId}
+            className='min-w-0'
+            disabled={!options}
+            required
+            onChange={(event) => {
+              setSelectedClientId(event.target.value);
+              setSelectedPetId('');
+            }}
+          >
+            <option value=''>{options ? 'Выберите клиента' : 'Загрузка клиентов...'}</option>
+            {options?.clients.map((clientOption) => (
+              <option key={clientOption.id} value={clientOption.id}>
+                {formatClientOption(clientOption)}
+              </option>
+            ))}
+          </Select>
+          {selectedClientId && (
+            <Link
+              href={`/crm/clients/${selectedClientId}`}
+              className={buttonVariants({ variant: 'outline', size: 'icon' })}
+              aria-label='Открыть страницу клиента'
+              title='Открыть страницу клиента'
+            >
+              <HugeiconsIcon icon={ArrowUpRight01Icon} strokeWidth={2} />
+            </Link>
+          )}
+        </div>
       </FormField>
       <FormField id={`${formId}-pet`} label='Питомец' required>
-        <Select
-          id={`${formId}-pet`}
-          name='petId'
-          value={selectedPetId}
-          disabled={!options}
-          required
-          onChange={(event) => {
-            const petId = event.target.value;
-            const pet = options?.pets.find((petOption) => petOption.id === petId);
+        <div className='flex gap-2'>
+          <Select
+            id={`${formId}-pet`}
+            name='petId'
+            value={selectedPetId}
+            className='min-w-0'
+            disabled={!options}
+            required
+            onChange={(event) => {
+              const petId = event.target.value;
+              const pet = options?.pets.find((petOption) => petOption.id === petId);
 
-            setSelectedPetId(petId);
+              setSelectedPetId(petId);
 
-            if (pet) {
-              setSelectedClientId(pet.clientId);
-            }
-          }}
-        >
-          <option value=''>
-            {!options
-              ? 'Загрузка питомцев...'
-              : availablePets.length
-                ? 'Выберите питомца'
-                : 'У клиента нет питомцев'}
-          </option>
-          {availablePets.map((petOption) => (
-            <option key={petOption.id} value={petOption.id}>
-              {petOption.breed ? `${petOption.name} — ${petOption.breed}` : petOption.name}
+              if (pet) {
+                setSelectedClientId(pet.clientId);
+              }
+            }}
+          >
+            <option value=''>
+              {!options
+                ? 'Загрузка питомцев...'
+                : availablePets.length
+                  ? 'Выберите питомца'
+                  : 'У клиента нет питомцев'}
             </option>
-          ))}
-        </Select>
+            {availablePets.map((petOption) => (
+              <option key={petOption.id} value={petOption.id}>
+                {petOption.breed ? `${petOption.name} — ${petOption.breed}` : petOption.name}
+              </option>
+            ))}
+          </Select>
+          {selectedPetId && (
+            <Link
+              href={`/crm/pets/${selectedPetId}`}
+              className={buttonVariants({ variant: 'outline', size: 'icon' })}
+              aria-label='Открыть страницу питомца'
+              title='Открыть страницу питомца'
+            >
+              <HugeiconsIcon icon={ArrowUpRight01Icon} strokeWidth={2} />
+            </Link>
+          )}
+        </div>
       </FormField>
       <FormField id={`${formId}-date`} label='Дата' required>
         <DatePicker
           key={appointmentDate}
           id={`${formId}-date`}
           name='scheduledDate'
-          defaultValue={appointmentDate}
+          defaultValue={selectedDate}
           futureYears={5}
         />
       </FormField>
       <div className='grid grid-cols-2 gap-3'>
         <FormField id={`${formId}-start-time`} label='Начало' required>
-          <TimePicker id={`${formId}-start-time`} name='scheduledStartTime' required />
+          <TimePicker
+            id={`${formId}-start-time`}
+            name='scheduledStartTime'
+            defaultValue={initialStartTime}
+            onValueChange={setStartTime}
+            required
+          />
         </FormField>
         <FormField id={`${formId}-end-time`} label='Окончание' required>
-          <TimePicker id={`${formId}-end-time`} name='scheduledEndTime' required />
+          <TimePicker
+            key={startTime}
+            id={`${formId}-end-time`}
+            name='scheduledEndTime'
+            defaultValue={startTime === initialStartTime && end ? formatFormTime(end) : ''}
+            after={startTime}
+            required
+          />
         </FormField>
       </div>
       <FormField id={`${formId}-location`} label='Место' required>
@@ -624,7 +699,12 @@ function AppointmentFields({
       </FormField>
       {locationType === 'mobile' && (
         <FormField id={`${formId}-address`} label='Адрес' required>
-          <Input id={`${formId}-address`} name='address' required />
+          <Input
+            id={`${formId}-address`}
+            name='address'
+            defaultValue={appointment?.address ?? ''}
+            required
+          />
         </FormField>
       )}
       <FormField id={`${formId}-services`} label='Услуги'>
@@ -712,12 +792,13 @@ function AppointmentFields({
         <Button
           type='button'
           variant='ghost'
-          size='icon'
+          size='icon-lg'
           aria-label='Подставить предварительную стоимость в итоговую'
           title='Подставить предварительную стоимость'
+          disabled={calculatedPrice === 0}
           onClick={() => setManualPrice(String(calculatedPrice))}
         >
-          <HugeiconsIcon icon={ArrowDown01Icon} strokeWidth={2} />
+          <HugeiconsIcon icon={ArrowDown02Icon} className='size-6' strokeWidth={2} />
         </Button>
       </div>
       <FormField id={`${formId}-price`} label='Итоговая стоимость'>
@@ -728,11 +809,16 @@ function AppointmentFields({
           min='0'
           step='0.01'
           value={manualPrice}
+          className='bg-white dark:bg-white dark:text-black'
           onChange={(event) => setManualPrice(event.target.value)}
         />
       </FormField>
       <FormField id={`${formId}-status`} label='Статус'>
-        <Select id={`${formId}-status`} name='status' defaultValue='confirmed'>
+        <Select
+          id={`${formId}-status`}
+          name='status'
+          defaultValue={appointment?.status ?? 'confirmed'}
+        >
           <option value='confirmed'>Подтверждена</option>
           <option value='completed'>Завершена</option>
           <option value='cancelled'>Отменена</option>
@@ -748,7 +834,7 @@ function AppointmentFields({
         />
       </FormField>
       <FormField id={`${formId}-notes`} label='Заметки'>
-        <Textarea id={`${formId}-notes`} name='notes' />
+        <Textarea id={`${formId}-notes`} name='notes' defaultValue={appointment?.notes ?? ''} />
       </FormField>
     </>
   );
@@ -778,6 +864,18 @@ function FormField({
 
 function formatServicePrice(price: number | null) {
   return price === null ? 'Без цены' : new Intl.NumberFormat('ru-RU').format(price);
+}
+
+function formatFormDate(date: Date) {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+
+  return `${year}-${month}-${day}`;
+}
+
+function formatFormTime(date: Date) {
+  return `${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`;
 }
 
 function Select({ className, ...props }: React.ComponentProps<'select'>) {

@@ -9,16 +9,41 @@ export function TimePicker({
   name,
   defaultValue = '',
   required = false,
+  after,
+  onValueChange,
 }: {
   id: string;
   name: string;
   defaultValue?: string;
   required?: boolean;
+  after?: string;
+  onValueChange?: (value: string) => void;
 }) {
   const [defaultHours = '', defaultMinutes = ''] = defaultValue.split(':');
   const [hours, setHours] = useState(defaultHours);
   const [minutes, setMinutes] = useState(defaultMinutes);
   const value = hours && minutes ? `${hours}:${minutes}` : '';
+  const [afterHours = '', afterMinutes = ''] = after?.split(':') ?? [];
+
+  function updateHours(nextHours: string) {
+    let nextMinutes = minutes;
+
+    if (nextHours && !nextMinutes) {
+      nextMinutes =
+        nextHours === afterHours && afterMinutes
+          ? String(Number(afterMinutes) + 1).padStart(2, '0')
+          : '00';
+    }
+
+    setHours(nextHours);
+    setMinutes(nextMinutes);
+    onValueChange?.(nextHours && nextMinutes ? `${nextHours}:${nextMinutes}` : '');
+  }
+
+  function updateMinutes(nextMinutes: string) {
+    setMinutes(nextMinutes);
+    onValueChange?.(hours && nextMinutes ? `${hours}:${nextMinutes}` : '');
+  }
 
   return (
     <div className='grid grid-cols-2 gap-2'>
@@ -27,11 +52,19 @@ export function TimePicker({
         aria-label='Часы'
         value={hours}
         required={required}
-        onChange={(event) => setHours(event.target.value)}
+        onChange={(event) => updateHours(event.target.value)}
       >
         <option value=''>Часы</option>
         {Array.from({ length: 24 }, (_, hour) => String(hour).padStart(2, '0')).map((hour) => (
-          <option key={hour} value={hour}>
+          <option
+            key={hour}
+            value={hour}
+            disabled={
+              Boolean(afterHours) &&
+              (Number(hour) < Number(afterHours) ||
+                (hour === afterHours && Number(afterMinutes) === 59))
+            }
+          >
             {hour}
           </option>
         ))}
@@ -42,11 +75,17 @@ export function TimePicker({
         aria-label='Минуты'
         value={minutes}
         required={required}
-        onChange={(event) => setMinutes(event.target.value)}
+        onChange={(event) => updateMinutes(event.target.value)}
       >
         <option value=''>Минуты</option>
         {Array.from({ length: 60 }, (_, minute) => String(minute).padStart(2, '0')).map((minute) => (
-          <option key={minute} value={minute}>
+          <option
+            key={minute}
+            value={minute}
+            disabled={
+              hours === afterHours && Boolean(afterMinutes) && Number(minute) <= Number(afterMinutes)
+            }
+          >
             {minute}
           </option>
         ))}

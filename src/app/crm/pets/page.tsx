@@ -45,7 +45,10 @@ export default async function PetsPage() {
                 {pets.map((pet) => (
                   <tr key={pet.id} className='transition-colors hover:bg-muted/30'>
                     <td className='px-5 py-4 font-medium'>
-                      <Link href={`/crm/pets/${pet.id}`} className='hover:underline'>
+                      <Link
+                        href={`/crm/pets/${pet.id}`}
+                        className='underline underline-offset-4'
+                      >
                         {pet.name}
                       </Link>
                     </td>
@@ -74,7 +77,10 @@ export default async function PetsPage() {
               <Card key={pet.id} className='transition-colors hover:bg-muted/30'>
                 <CardHeader>
                   <CardTitle>
-                    <Link href={`/crm/pets/${pet.id}`} className='hover:underline'>
+                    <Link
+                      href={`/crm/pets/${pet.id}`}
+                      className='underline underline-offset-4'
+                    >
                       {pet.name}
                     </Link>
                   </CardTitle>

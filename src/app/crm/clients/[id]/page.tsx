@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
+import type { ReactNode } from 'react';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -25,7 +26,10 @@ export default async function ClientPage({
     <div className='space-y-8'>
       <div className='flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between'>
         <div>
-          <Link href='/crm/clients' className='text-sm text-muted-foreground hover:text-foreground'>
+          <Link
+            href='/crm/clients'
+            className='text-sm text-muted-foreground underline underline-offset-4 hover:text-foreground'
+          >
             ← Все клиенты
           </Link>
           <h1 className='mt-3 text-2xl font-semibold tracking-tight'>{client.name}</h1>
@@ -52,8 +56,38 @@ export default async function ClientPage({
           <CardDescription>Контактные данные и предпочтения</CardDescription>
         </CardHeader>
         <CardContent className='grid gap-x-8 gap-y-5 sm:grid-cols-2 xl:grid-cols-3'>
-          <ClientDetail label='Телефон' value={client.phone ?? 'Не указан'} />
-          <ClientDetail label='Telegram' value={formatTelegram(client.telegramUsername)} />
+          <ClientDetail
+            label='Телефон'
+            value={
+              client.phone ? (
+                <a
+                  href={`tel:${client.phone}`}
+                  className='font-medium underline underline-offset-4'
+                >
+                  {client.phone}
+                </a>
+              ) : (
+                'Не указан'
+              )
+            }
+          />
+          <ClientDetail
+            label='Telegram'
+            value={
+              client.telegramUsername ? (
+                <a
+                  href={`https://t.me/${client.telegramUsername.replace(/^@/, '')}`}
+                  target='_blank'
+                  rel='noreferrer'
+                  className='font-medium underline underline-offset-4'
+                >
+                  {formatTelegram(client.telegramUsername)}
+                </a>
+              ) : (
+                'Не указан'
+              )
+            }
+          />
           <ClientDetail label='Язык' value={formatLanguage(client.preferredLanguage)} />
           <ClientDetail label='Адрес' value={client.address ?? 'Не указан'} />
           <ClientDetail
@@ -84,7 +118,7 @@ export default async function ClientPage({
               <Link key={pet.id} href={`/crm/pets/${pet.id}`}>
                 <Card className='h-full transition-colors hover:bg-muted/30'>
                   <CardHeader>
-                    <CardTitle>{pet.name}</CardTitle>
+                    <CardTitle className='underline underline-offset-4'>{pet.name}</CardTitle>
                     <CardDescription>
                       {formatSpecies(pet.species)} · {pet.breed ?? 'Порода не указана'}
                     </CardDescription>
@@ -112,7 +146,7 @@ function ClientDetail({
   className,
 }: {
   label: string;
-  value: string;
+  value: ReactNode;
   className?: string;
 }) {
   return (

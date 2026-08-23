@@ -26,11 +26,6 @@ body {
   box-sizing: border-box;
 }
 
-a {
-  color: inherit;
-  text-decoration: none;
-}
-
 @media (prefers-color-scheme: dark) {
   html {
     color-scheme: dark;
@@ -158,5 +153,9 @@ a {
   }
   html {
     @apply font-sans;
+  }
+  a {
+    color: inherit;
+    text-decoration: none;
   }
 }

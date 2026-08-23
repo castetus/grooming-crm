@@ -27,7 +27,10 @@ export default async function PetPage({
     <div className='space-y-8'>
       <div className='flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between'>
         <div>
-          <Link href='/crm/pets' className='text-sm text-muted-foreground hover:text-foreground'>
+          <Link
+            href='/crm/pets'
+            className='text-sm text-muted-foreground underline underline-offset-4 hover:text-foreground'
+          >
             ← Все питомцы
           </Link>
           <h1 className='mt-3 text-2xl font-semibold tracking-tight'>{pet.name}</h1>
@@ -69,7 +72,7 @@ export default async function PetPage({
             {owner ? (
               <Link
                 href={`/crm/clients/${owner.id}`}
-                className='mt-1 inline-block font-medium hover:underline'
+                className='mt-1 inline-block font-medium underline underline-offset-4'
               >
                 {owner.name}
               </Link>

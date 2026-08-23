@@ -5,6 +5,7 @@ import { HugeiconsIcon } from '@hugeicons/react';
 import { useMemo, useState } from 'react';
 
 import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
 import type { Appointment, Client, Pet } from '@/types/entities';
 
 import { EntityFormSheet } from './entity-form-sheet';
@@ -26,6 +27,7 @@ export function WeekCalendar({
 }) {
   const [weekStart, setWeekStart] = useState(() => getWeekStart(new Date(initialDate)));
   const [selectedDate, setSelectedDate] = useState<string>();
+  const [selectedAppointment, setSelectedAppointment] = useState<Appointment>();
   const clientNames = useMemo(
     () => new Map(clients.map((client) => [client.id, client.name])),
     [clients],
@@ -72,7 +74,7 @@ export function WeekCalendar({
       <div className='overflow-x-auto'>
         <div className='min-w-max'>
           <div className='flex h-12 items-end border-b text-xs text-muted-foreground'>
-            <div className='sticky left-0 z-20 w-24 shrink-0 bg-card px-4 pb-3 sm:w-32' />
+            <div className='sticky left-0 z-20 w-24 shrink-0 border-r bg-card px-4 sm:w-32' />
             <div className='relative h-full' style={{ width: timelineWidth }}>
               {hours.map((hour) => (
                 <span
@@ -93,14 +95,17 @@ export function WeekCalendar({
 
             return (
               <div key={day.toISOString()} className='flex h-24 border-b last:border-b-0'>
-                <div className='sticky left-0 z-20 flex w-24 shrink-0 flex-col justify-center bg-card px-4 sm:w-32'>
+                <div className='sticky left-0 z-20 flex w-24 shrink-0 flex-col justify-center border-r bg-card px-4 sm:w-32'>
                   <span className='text-sm font-medium capitalize'>{formatWeekday(day)}</span>
                   <span className='text-xs text-muted-foreground'>{formatDayDate(day)}</span>
                 </div>
                 <div
                   className='relative cursor-pointer'
                   style={{ width: timelineWidth }}
-                  onClick={() => setSelectedDate(formatInputDate(day))}
+                  onClick={() => {
+                    setSelectedAppointment(undefined);
+                    setSelectedDate(formatInputDate(day));
+                  }}
                 >
                   {dayAppointments.map((appointment) => {
                     const start = new Date(appointment.scheduledStart);
@@ -109,25 +114,36 @@ export function WeekCalendar({
                     const duration = Math.max((end.getTime() - start.getTime()) / 3_600_000, 0.5);
 
                     return (
-                      <article
+                      <button
                         key={appointment.id}
-                        className='absolute top-3 h-[72px] overflow-hidden rounded-xl bg-primary px-3 py-2 text-primary-foreground shadow-sm'
+                        type='button'
+                        className={cn(
+                          'absolute top-3 h-[72px] overflow-hidden rounded-xl border px-3 py-2 text-left shadow-sm',
+                          getAppointmentColor(appointment.status),
+                        )}
                         style={{
                           left: startPosition * hourWidth,
                           width: Math.max(duration * hourWidth - 4, 76),
                         }}
-                        onClick={(event) => event.stopPropagation()}
+                        onClick={(event) => {
+                          event.stopPropagation();
+                          setSelectedDate(undefined);
+                          setSelectedAppointment(appointment);
+                        }}
                       >
-                        <p className='truncate text-xs font-medium'>
-                          {formatTime(start)}–{formatTime(end)}
-                        </p>
+                        <div className='flex items-center justify-between gap-2 text-xs font-medium'>
+                          <p className='truncate'>
+                            {formatTime(start)}–{formatTime(end)}
+                          </p>
+                          <p className='shrink-0'>{formatPrice(appointment.estimatedPrice)}</p>
+                        </div>
                         <p className='mt-1 truncate text-sm'>
                           {petNames.get(appointment.petId) ?? 'Питомец'}
                         </p>
                         <p className='truncate text-xs opacity-70'>
                           {clientNames.get(appointment.clientId) ?? 'Клиент'}
                         </p>
-                      </article>
+                      </button>
                     );
                   })}
                 </div>
@@ -139,11 +155,17 @@ export function WeekCalendar({
       <EntityFormSheet
         type='appointment'
         actionLabel='Добавить запись'
-        appointmentDate={selectedDate}
-        open={Boolean(selectedDate)}
+        appointmentDate={
+          selectedAppointment
+            ? formatInputDate(new Date(selectedAppointment.scheduledStart))
+            : selectedDate
+        }
+        appointment={selectedAppointment}
+        open={Boolean(selectedDate || selectedAppointment)}
         onOpenChange={(open) => {
           if (!open) {
             setSelectedDate(undefined);
+            setSelectedAppointment(undefined);
           }
         }}
         hideTrigger
@@ -218,10 +240,27 @@ function formatTime(date: Date) {
   }).format(date);
 }
 
+function formatPrice(price: number | null) {
+  return price === null ? '—' : new Intl.NumberFormat('ru-RU').format(price);
+}
+
 function formatInputDate(date: Date) {
   const year = date.getFullYear();
   const month = String(date.getMonth() + 1).padStart(2, '0');
   const day = String(date.getDate()).padStart(2, '0');
 
   return `${year}-${month}-${day}`;
+}
+
+function getAppointmentColor(status: Appointment['status']) {
+  switch (status) {
+    case 'completed':
+      return 'border-emerald-600/20 bg-emerald-500 text-white';
+    case 'cancelled':
+      return 'border-rose-600/20 bg-rose-500 text-white';
+    case 'no_show':
+      return 'border-amber-600/20 bg-amber-400 text-amber-950';
+    default:
+      return 'border-blue-600/20 bg-blue-500 text-white';
+  }
 }

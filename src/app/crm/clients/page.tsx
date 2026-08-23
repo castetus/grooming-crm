@@ -43,7 +43,10 @@ export default async function ClientsPage() {
                 {clients.map((client) => (
                   <tr key={client.id} className='transition-colors hover:bg-muted/30'>
                     <td className='px-5 py-4 font-medium'>
-                      <Link href={`/crm/clients/${client.id}`} className='hover:underline'>
+                      <Link
+                        href={`/crm/clients/${client.id}`}
+                        className='underline underline-offset-4'
+                      >
                         {client.name}
                       </Link>
                     </td>
@@ -72,7 +75,10 @@ export default async function ClientsPage() {
               <Card key={client.id} className='transition-colors hover:bg-muted/30'>
                 <CardHeader>
                   <CardTitle>
-                    <Link href={`/crm/clients/${client.id}`} className='hover:underline'>
+                    <Link
+                      href={`/crm/clients/${client.id}`}
+                      className='underline underline-offset-4'
+                    >
                       {client.name}
                     </Link>
                   </CardTitle>
