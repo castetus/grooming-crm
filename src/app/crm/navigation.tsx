@@ -1,6 +1,7 @@
 'use client';
 
 import {
+  Add01Icon,
   Calendar03Icon,
   Cancel01Icon,
   HistoryIcon,
@@ -25,9 +26,16 @@ const navigationItems = [
   { label: 'Настройки', href: '/crm/settings', icon: Settings01Icon },
 ];
 
+const mobileActions = [
+  { href: '/crm', label: 'Добавить запись' },
+  { href: '/crm/clients', label: 'Добавить клиента' },
+  { href: '/crm/pets', label: 'Добавить питомца' },
+];
+
 export function CrmNavigation() {
   const pathname = usePathname();
   const [isOpen, setIsOpen] = useState(false);
+  const mobileAction = mobileActions.find(({ href }) => pathname === href);
 
   return (
     <>
@@ -38,16 +46,29 @@ export function CrmNavigation() {
 
       <header className="fixed inset-x-0 top-0 z-40 flex h-16 items-center justify-between border-b bg-background/95 px-4 backdrop-blur lg:hidden">
         <p className="font-semibold">Grooming CRM</p>
-        <Button
-          variant="ghost"
-          size="icon"
-          aria-label={isOpen ? 'Закрыть меню' : 'Открыть меню'}
-          aria-expanded={isOpen}
-          aria-controls="mobile-navigation"
-          onClick={() => setIsOpen(!isOpen)}
-        >
-          <HugeiconsIcon icon={isOpen ? Cancel01Icon : Menu01Icon} strokeWidth={2} />
-        </Button>
+        <div className="flex items-center gap-1">
+          {mobileAction && (
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              aria-label={mobileAction.label}
+              title={mobileAction.label}
+            >
+              <HugeiconsIcon icon={Add01Icon} strokeWidth={2} />
+            </Button>
+          )}
+          <Button
+            variant="ghost"
+            size="icon"
+            aria-label={isOpen ? 'Закрыть меню' : 'Открыть меню'}
+            aria-expanded={isOpen}
+            aria-controls="mobile-navigation"
+            onClick={() => setIsOpen(!isOpen)}
+          >
+            <HugeiconsIcon icon={isOpen ? Cancel01Icon : Menu01Icon} strokeWidth={2} />
+          </Button>
+        </div>
       </header>
 
       {isOpen && (

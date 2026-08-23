@@ -1,3 +1,5 @@
+import { PageHeader } from '../page-header';
+
 export default function PetsPage() {
-  return <h1>Питомцы</h1>;
+  return <PageHeader title='Питомцы' actionLabel='Добавить питомца' />;
 }

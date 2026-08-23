@@ -121,3 +121,14 @@ export type AppointmentStatus =
   
     createdAt: string;
   }
+
+export interface GroomingService {
+  id: string;
+  name: string;
+  description: string | null;
+  defaultPrice: number | null;
+  defaultDurationMinutes: number | null;
+  active: boolean;
+  createdAt: string;
+  updatedAt: string;
+}

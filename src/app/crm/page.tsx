@@ -1,3 +1,5 @@
+import { PageHeader } from './page-header';
+
 export default function CalendarPage() {
-  return <h1>Календарь записей</h1>;
+  return <PageHeader title='Календарь записей' actionLabel='Добавить запись' />;
 }

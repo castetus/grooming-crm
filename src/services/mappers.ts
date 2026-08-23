@@ -5,6 +5,7 @@ import type {
   BookingRequest,
   Appointment,
   GroomingSession,
+  GroomingService,
 } from '@/types/entities';
 
 export function mapClient(row: any): Client {
@@ -103,5 +104,18 @@ export function mapGroomingSession(row: any): GroomingSession {
     groomingDetails: row.grooming_details,
     notes: row.notes,
     createdAt: row.created_at,
+  };
+}
+
+export function mapGroomingService(row: any): GroomingService {
+  return {
+    id: row.id,
+    name: row.name,
+    description: row.description,
+    defaultPrice: row.default_price,
+    defaultDurationMinutes: row.default_duration_minutes,
+    active: row.active,
+    createdAt: row.created_at,
+    updatedAt: row.updated_at,
   };
 }

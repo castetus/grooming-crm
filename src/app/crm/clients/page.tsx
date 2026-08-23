@@ -1,3 +1,5 @@
+import { PageHeader } from '../page-header';
+
 export default function ClientsPage() {
-  return <h1>Клиенты</h1>;
+  return <PageHeader title='Клиенты' actionLabel='Добавить клиента' />;
 }
