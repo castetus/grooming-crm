@@ -1,9 +1,9 @@
-import { createClient } from "@/lib/supabase/server";
+import { createClient } from '@/lib/supabase/server';
 import type {
   GroomingSession,
   LocationType,
-} from "@/types/entities";
-import { mapGroomingSession } from "./mappers";
+} from '@/types/entities';
+import { mapGroomingSession } from './mappers';
 
 export interface CreateGroomingSessionInput {
   appointmentId?: string | null;
@@ -25,9 +25,9 @@ export async function getGroomingSessions(): Promise<GroomingSession[]> {
   const supabase = await createClient();
 
   const { data, error } = await supabase
-    .from("grooming_sessions")
-    .select("*")
-    .order("performed_at", { ascending: false });
+    .from('grooming_sessions')
+    .select('*')
+    .order('performed_at', { ascending: false });
 
   if (error) throw error;
 
@@ -40,9 +40,9 @@ export async function getGroomingSessionById(
   const supabase = await createClient();
 
   const { data, error } = await supabase
-    .from("grooming_sessions")
-    .select("*")
-    .eq("id", id)
+    .from('grooming_sessions')
+    .select('*')
+    .eq('id', id)
     .maybeSingle();
 
   if (error) throw error;
@@ -56,10 +56,10 @@ export async function getGroomingSessionsByPetId(
   const supabase = await createClient();
 
   const { data, error } = await supabase
-    .from("grooming_sessions")
-    .select("*")
-    .eq("pet_id", petId)
-    .order("performed_at", { ascending: false });
+    .from('grooming_sessions')
+    .select('*')
+    .eq('pet_id', petId)
+    .order('performed_at', { ascending: false });
 
   if (error) throw error;
 
@@ -72,7 +72,7 @@ export async function createGroomingSession(
   const supabase = await createClient();
 
   const { data, error } = await supabase
-    .from("grooming_sessions")
+    .from('grooming_sessions')
     .insert({
       appointment_id: input.appointmentId ?? null,
       pet_id: input.petId,
@@ -117,9 +117,9 @@ export async function updateGroomingSession(
   if (input.notes !== undefined) payload.notes = input.notes;
 
   const { data, error } = await supabase
-    .from("grooming_sessions")
+    .from('grooming_sessions')
     .update(payload)
-    .eq("id", id)
+    .eq('id', id)
     .select()
     .single();
 
@@ -132,9 +132,9 @@ export async function deleteGroomingSession(id: string): Promise<void> {
   const supabase = await createClient();
 
   const { error } = await supabase
-    .from("grooming_sessions")
+    .from('grooming_sessions')
     .delete()
-    .eq("id", id);
+    .eq('id', id);
 
   if (error) throw error;
 }

@@ -1,19 +1,19 @@
-"use client";
+'use client';
 
-import { useActionState } from "react";
+import { useActionState } from 'react';
 
-import { Button } from "@/components/ui/button";
+import { Button } from '@/components/ui/button';
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+} from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 
-import { login } from "./actions";
+import { login } from './actions';
 
 export function LoginForm() {
   const [state, formAction, pending] = useActionState(login, null);
@@ -47,7 +47,7 @@ export function LoginForm() {
             />
           </div>
           <Button className="w-full" type="submit" disabled={pending}>
-            {pending ? "Вход..." : "Войти"}
+            {pending ? 'Вход...' : 'Войти'}
           </Button>
           {state?.error && (
             <p className="text-sm text-destructive" role="alert">

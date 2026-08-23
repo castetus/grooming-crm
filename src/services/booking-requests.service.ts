@@ -1,4 +1,4 @@
-import { createClient } from "@/lib/supabase/server";
+import { createClient } from '@/lib/supabase/server';
 import type {
   BookingRequest,
   BookingRequestStatus,
@@ -6,8 +6,8 @@ import type {
   PetSex,
   PetSpecies,
   PreferredLanguage,
-} from "@/types/entities";
-import { mapBookingRequest } from "./mappers";
+} from '@/types/entities';
+import { mapBookingRequest } from './mappers';
 
 export interface CreateBookingRequestInput {
   clientName: string;
@@ -38,9 +38,9 @@ export async function getBookingRequests(): Promise<BookingRequest[]> {
   const supabase = await createClient();
 
   const { data, error } = await supabase
-    .from("booking_requests")
-    .select("*")
-    .order("created_at", { ascending: false });
+    .from('booking_requests')
+    .select('*')
+    .order('created_at', { ascending: false });
 
   if (error) throw error;
 
@@ -53,9 +53,9 @@ export async function getBookingRequestById(
   const supabase = await createClient();
 
   const { data, error } = await supabase
-    .from("booking_requests")
-    .select("*")
-    .eq("id", id)
+    .from('booking_requests')
+    .select('*')
+    .eq('id', id)
     .maybeSingle();
 
   if (error) throw error;
@@ -69,12 +69,12 @@ export async function createBookingRequest(
   const supabase = await createClient();
 
   const { data, error } = await supabase
-    .from("booking_requests")
+    .from('booking_requests')
     .insert({
       client_name: input.clientName,
       phone: input.phone ?? null,
       telegram_username: input.telegramUsername ?? null,
-      preferred_language: input.preferredLanguage ?? "ru",
+      preferred_language: input.preferredLanguage ?? 'ru',
 
       pet_name: input.petName,
       species: input.species,
@@ -130,9 +130,9 @@ export async function updateBookingRequest(
   if (input.status !== undefined) payload.status = input.status;
 
   const { data, error } = await supabase
-    .from("booking_requests")
+    .from('booking_requests')
     .update(payload)
-    .eq("id", id)
+    .eq('id', id)
     .select()
     .single();
 
@@ -145,9 +145,9 @@ export async function deleteBookingRequest(id: string): Promise<void> {
   const supabase = await createClient();
 
   const { error } = await supabase
-    .from("booking_requests")
+    .from('booking_requests')
     .delete()
-    .eq("id", id);
+    .eq('id', id);
 
   if (error) throw error;
 }

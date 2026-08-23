@@ -1,10 +1,10 @@
-import { createClient } from "@/lib/supabase/server";
+import { createClient } from '@/lib/supabase/server';
 import type {
   Appointment,
   AppointmentStatus,
   LocationType,
-} from "@/types/entities";
-import { mapAppointment } from "./mappers";
+} from '@/types/entities';
+import { mapAppointment } from './mappers';
 
 export interface CreateAppointmentInput {
   clientId: string;
@@ -29,9 +29,9 @@ export async function getAppointments(): Promise<Appointment[]> {
   const supabase = await createClient();
 
   const { data, error } = await supabase
-    .from("appointments")
-    .select("*")
-    .order("scheduled_start");
+    .from('appointments')
+    .select('*')
+    .order('scheduled_start');
 
   if (error) throw error;
 
@@ -44,9 +44,9 @@ export async function getAppointmentById(
   const supabase = await createClient();
 
   const { data, error } = await supabase
-    .from("appointments")
-    .select("*")
-    .eq("id", id)
+    .from('appointments')
+    .select('*')
+    .eq('id', id)
     .maybeSingle();
 
   if (error) throw error;
@@ -61,11 +61,11 @@ export async function getAppointmentsByRange(
   const supabase = await createClient();
 
   const { data, error } = await supabase
-    .from("appointments")
-    .select("*")
-    .gte("scheduled_start", from)
-    .lt("scheduled_start", to)
-    .order("scheduled_start");
+    .from('appointments')
+    .select('*')
+    .gte('scheduled_start', from)
+    .lt('scheduled_start', to)
+    .order('scheduled_start');
 
   if (error) throw error;
 
@@ -78,7 +78,7 @@ export async function createAppointment(
   const supabase = await createClient();
 
   const { data, error } = await supabase
-    .from("appointments")
+    .from('appointments')
     .insert({
       client_id: input.clientId,
       pet_id: input.petId,
@@ -92,7 +92,7 @@ export async function createAppointment(
       address: input.address ?? null,
 
       estimated_price: input.estimatedPrice ?? null,
-      status: input.status ?? "confirmed",
+      status: input.status ?? 'confirmed',
       notes: input.notes ?? null,
     })
     .select()
@@ -134,9 +134,9 @@ export async function updateAppointment(
   if (input.notes !== undefined) payload.notes = input.notes;
 
   const { data, error } = await supabase
-    .from("appointments")
+    .from('appointments')
     .update(payload)
-    .eq("id", id)
+    .eq('id', id)
     .select()
     .single();
 
@@ -149,9 +149,9 @@ export async function deleteAppointment(id: string): Promise<void> {
   const supabase = await createClient();
 
   const { error } = await supabase
-    .from("appointments")
+    .from('appointments')
     .delete()
-    .eq("id", id);
+    .eq('id', id);
 
   if (error) throw error;
 }

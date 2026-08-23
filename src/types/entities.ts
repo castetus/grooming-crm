@@ -1,22 +1,22 @@
-export type PreferredLanguage = "ru" | "sr";
+export type PreferredLanguage = 'ru' | 'sr';
 
-export type PetSpecies = "dog" | "cat";
+export type PetSpecies = 'dog' | 'cat';
 
-export type PetSex = "male" | "female";
+export type PetSex = 'male' | 'female';
 
-export type LocationType = "salon" | "mobile";
+export type LocationType = 'salon' | 'mobile';
 
 export type BookingRequestStatus =
-  | "pending"
-  | "approved"
-  | "rejected"
-  | "expired";
+  | 'pending'
+  | 'approved'
+  | 'rejected'
+  | 'expired';
 
 export type AppointmentStatus =
-  | "confirmed"
-  | "completed"
-  | "cancelled"
-  | "no_show";
+  | 'confirmed'
+  | 'completed'
+  | 'cancelled'
+  | 'no_show';
 
   export interface Client {
     id: string;

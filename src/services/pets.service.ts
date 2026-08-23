@@ -1,6 +1,6 @@
-import { createClient } from "@/lib/supabase/server";
-import type { Pet, PetSex, PetSpecies } from "@/types/entities";
-import { mapPet } from "./mappers";
+import { createClient } from '@/lib/supabase/server';
+import type { Pet, PetSex, PetSpecies } from '@/types/entities';
+import { mapPet } from './mappers';
 
 export interface CreatePetInput {
   clientId: string;
@@ -14,15 +14,15 @@ export interface CreatePetInput {
   notes?: string | null;
 }
 
-export type UpdatePetInput = Partial<Omit<CreatePetInput, "clientId">>;
+export type UpdatePetInput = Partial<Omit<CreatePetInput, 'clientId'>>;
 
 export async function getPets(): Promise<Pet[]> {
   const supabase = await createClient();
 
   const { data, error } = await supabase
-    .from("pets")
-    .select("*")
-    .order("name");
+    .from('pets')
+    .select('*')
+    .order('name');
 
   if (error) throw error;
 
@@ -33,9 +33,9 @@ export async function getPetById(id: string): Promise<Pet | null> {
   const supabase = await createClient();
 
   const { data, error } = await supabase
-    .from("pets")
-    .select("*")
-    .eq("id", id)
+    .from('pets')
+    .select('*')
+    .eq('id', id)
     .maybeSingle();
 
   if (error) throw error;
@@ -47,10 +47,10 @@ export async function getPetsByClientId(clientId: string): Promise<Pet[]> {
   const supabase = await createClient();
 
   const { data, error } = await supabase
-    .from("pets")
-    .select("*")
-    .eq("client_id", clientId)
-    .order("name");
+    .from('pets')
+    .select('*')
+    .eq('client_id', clientId)
+    .order('name');
 
   if (error) throw error;
 
@@ -61,7 +61,7 @@ export async function createPet(input: CreatePetInput): Promise<Pet> {
   const supabase = await createClient();
 
   const { data, error } = await supabase
-    .from("pets")
+    .from('pets')
     .insert({
       client_id: input.clientId,
       name: input.name,
@@ -103,9 +103,9 @@ export async function updatePet(
   if (input.notes !== undefined) payload.notes = input.notes;
 
   const { data, error } = await supabase
-    .from("pets")
+    .from('pets')
     .update(payload)
-    .eq("id", id)
+    .eq('id', id)
     .select()
     .single();
 
@@ -118,9 +118,9 @@ export async function deletePet(id: string): Promise<void> {
   const supabase = await createClient();
 
   const { error } = await supabase
-    .from("pets")
+    .from('pets')
     .delete()
-    .eq("id", id);
+    .eq('id', id);
 
   if (error) throw error;
 }

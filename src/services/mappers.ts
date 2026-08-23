@@ -5,7 +5,7 @@ import type {
   BookingRequest,
   Appointment,
   GroomingSession,
-} from "@/types/entities";
+} from '@/types/entities';
 
 export function mapClient(row: any): Client {
   return {

@@ -1,6 +1,6 @@
-import { createClient } from "@/lib/supabase/server";
-import type { Client, PreferredLanguage } from "@/types/entities";
-import { mapClient } from "./mappers";
+import { createClient } from '@/lib/supabase/server';
+import type { Client, PreferredLanguage } from '@/types/entities';
+import { mapClient } from './mappers';
 
 export interface CreateClientInput {
   name: string;
@@ -18,9 +18,9 @@ export async function getClients(): Promise<Client[]> {
   const supabase = await createClient();
 
   const { data, error } = await supabase
-    .from("clients")
-    .select("*")
-    .order("name");
+    .from('clients')
+    .select('*')
+    .order('name');
 
   if (error) throw error;
 
@@ -31,9 +31,9 @@ export async function getClientById(id: string): Promise<Client | null> {
   const supabase = await createClient();
 
   const { data, error } = await supabase
-    .from("clients")
-    .select("*")
-    .eq("id", id)
+    .from('clients')
+    .select('*')
+    .eq('id', id)
     .maybeSingle();
 
   if (error) throw error;
@@ -47,13 +47,13 @@ export async function createClientEntity(
   const supabase = await createClient();
 
   const { data, error } = await supabase
-    .from("clients")
+    .from('clients')
     .insert({
       name: input.name,
       phone: input.phone ?? null,
       telegram_username: input.telegramUsername ?? null,
       telegram_chat_id: input.telegramChatId ?? null,
-      preferred_language: input.preferredLanguage ?? "ru",
+      preferred_language: input.preferredLanguage ?? 'ru',
       address: input.address ?? null,
       notes: input.notes ?? null,
     })
@@ -88,9 +88,9 @@ export async function updateClient(
   if (input.notes !== undefined) payload.notes = input.notes;
 
   const { data, error } = await supabase
-    .from("clients")
+    .from('clients')
     .update(payload)
-    .eq("id", id)
+    .eq('id', id)
     .select()
     .single();
 
@@ -103,9 +103,9 @@ export async function deleteClient(id: string): Promise<void> {
   const supabase = await createClient();
 
   const { error } = await supabase
-    .from("clients")
+    .from('clients')
     .delete()
-    .eq("id", id);
+    .eq('id', id);
 
   if (error) throw error;
 }

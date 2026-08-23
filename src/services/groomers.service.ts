@@ -1,6 +1,6 @@
-import { createClient } from "@/lib/supabase/server";
-import type { Groomer } from "@/types/entities";
-import { mapGroomer } from "./mappers";
+import { createClient } from '@/lib/supabase/server';
+import type { Groomer } from '@/types/entities';
+import { mapGroomer } from './mappers';
 
 export interface CreateGroomerInput {
   name: string;
@@ -14,9 +14,9 @@ export async function getGroomers(): Promise<Groomer[]> {
   const supabase = await createClient();
 
   const { data, error } = await supabase
-    .from("groomers")
-    .select("*")
-    .order("name");
+    .from('groomers')
+    .select('*')
+    .order('name');
 
   if (error) throw error;
 
@@ -27,9 +27,9 @@ export async function getGroomerById(id: string): Promise<Groomer | null> {
   const supabase = await createClient();
 
   const { data, error } = await supabase
-    .from("groomers")
-    .select("*")
-    .eq("id", id)
+    .from('groomers')
+    .select('*')
+    .eq('id', id)
     .maybeSingle();
 
   if (error) throw error;
@@ -43,7 +43,7 @@ export async function createGroomer(
   const supabase = await createClient();
 
   const { data, error } = await supabase
-    .from("groomers")
+    .from('groomers')
     .insert({
       name: input.name,
       phone: input.phone ?? null,
@@ -70,9 +70,9 @@ export async function updateGroomer(
   if (input.active !== undefined) payload.active = input.active;
 
   const { data, error } = await supabase
-    .from("groomers")
+    .from('groomers')
     .update(payload)
-    .eq("id", id)
+    .eq('id', id)
     .select()
     .single();
 
@@ -85,9 +85,9 @@ export async function deleteGroomer(id: string): Promise<void> {
   const supabase = await createClient();
 
   const { error } = await supabase
-    .from("groomers")
+    .from('groomers')
     .delete()
-    .eq("id", id);
+    .eq('id', id);
 
   if (error) throw error;
 }
