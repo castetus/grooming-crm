@@ -1,10 +1,18 @@
 import Link from 'next/link';
 
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  Card,
+  CardAction,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
 import { getClients } from '@/services/client.service';
 import { getPets } from '@/services/pets.service';
 
 import { PageHeader } from '../page-header';
+import { EntityFormSheet } from '../entity-form-sheet';
 
 export default async function PetsPage() {
   const [pets, clients] = await Promise.all([getPets(), getClients()]);
@@ -30,6 +38,7 @@ export default async function PetsPage() {
                   <th className='px-5 py-3 font-medium'>Вид</th>
                   <th className='px-5 py-3 font-medium'>Порода</th>
                   <th className='px-5 py-3 font-medium'>Интервал</th>
+                  <th className='px-5 py-3 text-right font-medium'>Действия</th>
                 </tr>
               </thead>
               <tbody className='divide-y'>
@@ -44,6 +53,16 @@ export default async function PetsPage() {
                     <td className='px-5 py-4'>{formatSpecies(pet.species)}</td>
                     <td className='px-5 py-4'>{pet.breed ?? '—'}</td>
                     <td className='px-5 py-4'>{formatInterval(pet.recommendedIntervalDays)}</td>
+                    <td className='px-5 py-4'>
+                      <div className='flex justify-end'>
+                        <EntityFormSheet
+                          type='pet'
+                          actionLabel='Редактировать питомца'
+                          pet={pet}
+                          mobile
+                        />
+                      </div>
+                    </td>
                   </tr>
                 ))}
               </tbody>
@@ -52,23 +71,33 @@ export default async function PetsPage() {
 
           <div className='grid gap-3 lg:hidden'>
             {pets.map((pet) => (
-              <Link key={pet.id} href={`/crm/pets/${pet.id}`}>
-                <Card className='transition-colors hover:bg-muted/30'>
-                  <CardHeader>
-                    <CardTitle>{pet.name}</CardTitle>
-                    <CardDescription>{clientNames.get(pet.clientId) ?? 'Клиент не указан'}</CardDescription>
-                  </CardHeader>
-                  <CardContent className='grid grid-cols-2 gap-x-4 gap-y-2'>
-                    <PetDetail label='Вид' value={formatSpecies(pet.species)} />
-                    <PetDetail label='Порода' value={pet.breed ?? '—'} />
-                    <PetDetail
-                      label='Интервал'
-                      value={formatInterval(pet.recommendedIntervalDays)}
+              <Card key={pet.id} className='transition-colors hover:bg-muted/30'>
+                <CardHeader>
+                  <CardTitle>
+                    <Link href={`/crm/pets/${pet.id}`} className='hover:underline'>
+                      {pet.name}
+                    </Link>
+                  </CardTitle>
+                  <CardDescription>{clientNames.get(pet.clientId) ?? 'Клиент не указан'}</CardDescription>
+                  <CardAction>
+                    <EntityFormSheet
+                      type='pet'
+                      actionLabel='Редактировать питомца'
+                      pet={pet}
+                      mobile
                     />
-                    <PetDetail label='Пол' value={pet.sex === 'female' ? 'Самка' : 'Самец'} />
-                  </CardContent>
-                </Card>
-              </Link>
+                  </CardAction>
+                </CardHeader>
+                <CardContent className='grid grid-cols-2 gap-x-4 gap-y-2'>
+                  <PetDetail label='Вид' value={formatSpecies(pet.species)} />
+                  <PetDetail label='Порода' value={pet.breed ?? '—'} />
+                  <PetDetail
+                    label='Интервал'
+                    value={formatInterval(pet.recommendedIntervalDays)}
+                  />
+                  <PetDetail label='Пол' value={pet.sex === 'female' ? 'Самка' : 'Самец'} />
+                </CardContent>
+              </Card>
             ))}
           </div>
         </>

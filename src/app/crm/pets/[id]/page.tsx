@@ -1,9 +1,13 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 
+import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { getClientById } from '@/services/client.service';
 import { getPetById } from '@/services/pets.service';
+
+import { EntityFormSheet } from '../../entity-form-sheet';
+import { archivePetAction } from '../actions';
 
 export default async function PetPage({
   params,
@@ -21,14 +25,26 @@ export default async function PetPage({
 
   return (
     <div className='space-y-8'>
-      <div>
-        <Link href='/crm/pets' className='text-sm text-muted-foreground hover:text-foreground'>
-          ← Все питомцы
-        </Link>
-        <h1 className='mt-3 text-2xl font-semibold tracking-tight'>{pet.name}</h1>
-        <p className='mt-1 text-muted-foreground'>
-          {formatSpecies(pet.species)} · {pet.breed ?? 'Порода не указана'}
-        </p>
+      <div className='flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between'>
+        <div>
+          <Link href='/crm/pets' className='text-sm text-muted-foreground hover:text-foreground'>
+            ← Все питомцы
+          </Link>
+          <h1 className='mt-3 text-2xl font-semibold tracking-tight'>{pet.name}</h1>
+          <p className='mt-1 text-muted-foreground'>
+            {formatSpecies(pet.species)} · {pet.breed ?? 'Порода не указана'}
+          </p>
+        </div>
+        {!pet.archivedAt && (
+          <div className='flex flex-col gap-2 sm:flex-row'>
+            <EntityFormSheet type='pet' actionLabel='Редактировать' pet={pet} />
+            <form action={archivePetAction.bind(null, pet.id)}>
+              <Button type='submit' variant='outline' className='w-full sm:w-auto'>
+                В архив
+              </Button>
+            </form>
+          </div>
+        )}
       </div>
 
       <Card>

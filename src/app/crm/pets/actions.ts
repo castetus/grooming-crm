@@ -1,9 +1,10 @@
 'use server';
 
-import { getClients } from '@/services/client.service';
-import { createClientEntity } from '@/services/client.service';
-import { createPet } from '@/services/pets.service';
 import { revalidatePath } from 'next/cache';
+import { redirect } from 'next/navigation';
+
+import { createClientEntity, getClients } from '@/services/client.service';
+import { archivePet, createPet, updatePet } from '@/services/pets.service';
 
 export async function getClientsForSelect() {
   const clients = await getClients();
@@ -56,6 +57,37 @@ export async function createPetAction(formData: FormData) {
   revalidatePath('/crm/pets');
 
   return { petId: pet.id };
+}
+
+export async function archivePetAction(id: string) {
+  await archivePet(id);
+
+  revalidatePath('/crm/pets');
+  revalidatePath('/crm/clients');
+  redirect('/crm/pets');
+}
+
+export async function updatePetAction(id: string, formData: FormData) {
+  const name = getString(formData, 'name');
+
+  if (!name) {
+    throw new Error('Укажите кличку питомца');
+  }
+
+  await updatePet(id, {
+    name,
+    species: getString(formData, 'species') === 'cat' ? 'cat' : 'dog',
+    breed: getString(formData, 'breed'),
+    birthDate: getString(formData, 'birthDate'),
+    sex: getString(formData, 'sex') === 'female' ? 'female' : 'male',
+    groomingPlan: getString(formData, 'groomingPlan'),
+    recommendedIntervalDays: getNumber(formData, 'recommendedIntervalDays'),
+    notes: getString(formData, 'notes'),
+  });
+
+  revalidatePath('/crm/pets');
+  revalidatePath(`/crm/pets/${id}`);
+  revalidatePath('/crm/clients');
 }
 
 function getString(formData: FormData, name: string) {

@@ -122,3 +122,7 @@ export async function deleteGroomingService(id: string): Promise<void> {
 
   if (error) throw error;
 }
+
+export async function archiveGroomingService(id: string): Promise<GroomingService> {
+  return updateGroomingService(id, { active: false });
+}

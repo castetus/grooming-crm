@@ -1,6 +1,6 @@
 'use client';
 
-import { Add01Icon } from '@hugeicons/core-free-icons';
+import { Add01Icon, Edit02Icon } from '@hugeicons/core-free-icons';
 import { HugeiconsIcon } from '@hugeicons/react';
 import type { ReactNode } from 'react';
 import { useId, useState } from 'react';
@@ -17,9 +17,14 @@ import {
   SheetTrigger,
 } from '@/components/ui/sheet';
 import { cn } from '@/lib/utils';
+import type { Client, GroomingService, Pet } from '@/types/entities';
 
-import { createClientAction } from './clients/actions';
-import { createPetAction, getClientsForSelect } from './pets/actions';
+import { createClientAction, updateClientAction } from './clients/actions';
+import { createPetAction, getClientsForSelect, updatePetAction } from './pets/actions';
+import {
+  createGroomingServiceAction,
+  updateGroomingServiceAction,
+} from './settings/grooming-services/actions';
 
 type ClientOption = Awaited<ReturnType<typeof getClientsForSelect>>[number];
 
@@ -49,17 +54,29 @@ export function EntityFormSheet({
   actionLabel,
   mobile = false,
   className,
+  groomingService,
+  client,
+  pet,
 }: {
   type: EntityFormType;
   actionLabel: string;
   mobile?: boolean;
   className?: string;
+  groomingService?: GroomingService;
+  client?: Client;
+  pet?: Pet;
 }) {
   const [isOpen, setIsOpen] = useState(false);
   const [formType, setFormType] = useState<EntityFormType>(type);
   const [clientId, setClientId] = useState<string>();
   const [clients, setClients] = useState<ClientOption[]>();
-  const copy = formCopy[formType];
+  const isEditing = Boolean(groomingService || client || pet);
+  const copy = isEditing
+    ? {
+        title: `Редактирование: ${groomingService?.name ?? client?.name ?? pet?.name ?? ''}`,
+        description: 'Измените данные и сохраните форму.',
+      }
+    : formCopy[formType];
 
   function handleOpenChange(open: boolean) {
     setIsOpen(open);
@@ -93,7 +110,11 @@ export function EntityFormSheet({
           />
         }
       >
-        <HugeiconsIcon icon={Add01Icon} data-icon='inline-start' strokeWidth={2} />
+        <HugeiconsIcon
+          icon={isEditing ? Edit02Icon : Add01Icon}
+          data-icon='inline-start'
+          strokeWidth={2}
+        />
         {!mobile && actionLabel}
       </SheetTrigger>
       <SheetContent className='data-[side=right]:w-full sm:data-[side=right]:w-3/4 sm:data-[side=right]:max-w-lg'>
@@ -105,12 +126,16 @@ export function EntityFormSheet({
           type={formType}
           clientId={clientId}
           clients={clients}
+          groomingService={groomingService}
+          client={client}
+          pet={pet}
           onClientCreated={(createdClientId) => {
             setClientId(createdClientId);
             setFormType('pet');
             void loadClients();
           }}
           onPetCreated={() => handleOpenChange(false)}
+          onGroomingServiceCreated={() => handleOpenChange(false)}
         />
       </SheetContent>
     </Sheet>
@@ -121,32 +146,58 @@ function EntityForm({
   type,
   clientId,
   clients,
+  groomingService,
+  client,
+  pet,
   onClientCreated,
   onPetCreated,
+  onGroomingServiceCreated,
 }: {
   type: EntityFormType;
   clientId?: string;
   clients?: ClientOption[];
+  groomingService?: GroomingService;
+  client?: Client;
+  pet?: Pet;
   onClientCreated: (clientId: string) => void;
   onPetCreated: () => void;
+  onGroomingServiceCreated: () => void;
 }) {
   const formId = useId();
 
   async function handleAction(formData: FormData) {
     if (type !== 'client') {
       if (type === 'pet') {
-        await createPetAction(formData);
+        if (pet) {
+          await updatePetAction(pet.id, formData);
+        } else {
+          await createPetAction(formData);
+        }
         onPetCreated();
+      }
+
+      if (type === 'grooming-service') {
+        if (groomingService) {
+          await updateGroomingServiceAction(groomingService.id, formData);
+        } else {
+          await createGroomingServiceAction(formData);
+        }
+        onGroomingServiceCreated();
       }
 
       return;
     }
 
-    const result = await createClientAction(formData);
-    onClientCreated(result.clientId);
+    if (client) {
+      await updateClientAction(client.id, formData);
+      onPetCreated();
+    } else {
+      const result = await createClientAction(formData);
+      onClientCreated(result.clientId);
+    }
   }
 
-  const action = type === 'client' || type === 'pet' ? handleAction : undefined;
+  const action = type === 'appointment' ? undefined : handleAction;
 
   return (
     <form
@@ -156,11 +207,18 @@ function EntityForm({
       onSubmit={action ? undefined : (event) => event.preventDefault()}
     >
       <div className='flex-1 space-y-5 overflow-y-auto px-6 pb-6'>
-        {type === 'client' && <ClientFields formId={formId} />}
+        {type === 'client' && <ClientFields formId={formId} client={client} />}
         {type === 'pet' && (
-          <PetFields formId={formId} clientId={clientId} clients={clients} />
+          <PetFields
+            formId={formId}
+            clientId={pet?.clientId ?? clientId}
+            clients={clients}
+            pet={pet}
+          />
         )}
-        {type === 'grooming-service' && <GroomingServiceFields formId={formId} />}
+        {type === 'grooming-service' && (
+          <GroomingServiceFields formId={formId} service={groomingService} />
+        )}
         {type === 'appointment' && <AppointmentFields formId={formId} />}
       </div>
       <div className='border-t p-6'>
@@ -175,9 +233,11 @@ function EntityForm({
 function ClientFields({
   formId,
   embedded = false,
+  client,
 }: {
   formId: string;
   embedded?: boolean;
+  client?: Client;
 }) {
   const fieldName = (name: string) =>
     embedded ? `newClient${name.charAt(0).toUpperCase()}${name.slice(1)}` : name;
@@ -185,33 +245,34 @@ function ClientFields({
   return (
     <>
       <FormField id={`${formId}-name`} label='Имя' required>
-        <Input id={`${formId}-name`} name={fieldName('name')} required />
+        <Input id={`${formId}-name`} name={fieldName('name')} defaultValue={client?.name} required />
       </FormField>
       <FormField id={`${formId}-phone`} label='Телефон'>
-        <Input id={`${formId}-phone`} name={fieldName('phone')} type='tel' />
+        <Input id={`${formId}-phone`} name={fieldName('phone')} type='tel' defaultValue={client?.phone ?? ''} />
       </FormField>
       <FormField id={`${formId}-telegram-username`} label='Имя пользователя в Telegram'>
         <Input
           id={`${formId}-telegram-username`}
           name={fieldName('telegramUsername')}
           placeholder='@username'
+          defaultValue={client?.telegramUsername ?? ''}
         />
       </FormField>
       <FormField id={`${formId}-language`} label='Предпочитаемый язык'>
         <Select
           id={`${formId}-language`}
           name={fieldName('preferredLanguage')}
-          defaultValue='ru'
+          defaultValue={client?.preferredLanguage ?? 'ru'}
         >
           <option value='ru'>Русский</option>
           <option value='sr'>Сербский</option>
         </Select>
       </FormField>
       <FormField id={`${formId}-address`} label='Адрес'>
-        <Input id={`${formId}-address`} name={fieldName('address')} />
+        <Input id={`${formId}-address`} name={fieldName('address')} defaultValue={client?.address ?? ''} />
       </FormField>
       <FormField id={`${formId}-notes`} label='Заметки'>
-        <Textarea id={`${formId}-notes`} name={fieldName('notes')} />
+        <Textarea id={`${formId}-notes`} name={fieldName('notes')} defaultValue={client?.notes ?? ''} />
       </FormField>
     </>
   );
@@ -221,10 +282,12 @@ function PetFields({
   formId,
   clientId,
   clients,
+  pet,
 }: {
   formId: string;
   clientId?: string;
   clients?: ClientOption[];
+  pet?: Pet;
 }) {
   const [isCreatingClient, setIsCreatingClient] = useState(false);
 
@@ -236,16 +299,18 @@ function PetFields({
           id={`${formId}-client`}
           clients={clients}
           defaultClientId={clientId}
-          disabled={isCreatingClient}
+          disabled={isCreatingClient || Boolean(pet)}
         />
-        <Button
-          type='button'
-          variant='outline'
-          className='mt-2 w-full'
-          onClick={() => setIsCreatingClient(!isCreatingClient)}
-        >
-          {isCreatingClient ? 'Выбрать существующего клиента' : 'Создать нового клиента'}
-        </Button>
+        {!pet && (
+          <Button
+            type='button'
+            variant='outline'
+            className='mt-2 w-full'
+            onClick={() => setIsCreatingClient(!isCreatingClient)}
+          >
+            {isCreatingClient ? 'Выбрать существующего клиента' : 'Создать нового клиента'}
+          </Button>
+        )}
       </FormField>
       {isCreatingClient && (
         <div className='space-y-5 rounded-xl border bg-muted/30 p-4'>
@@ -254,34 +319,40 @@ function PetFields({
         </div>
       )}
       <FormField id={`${formId}-name`} label='Кличка' required>
-        <Input id={`${formId}-name`} name='name' required />
+        <Input id={`${formId}-name`} name='name' defaultValue={pet?.name} required />
       </FormField>
       <FormField id={`${formId}-species`} label='Вид' required>
-        <Select id={`${formId}-species`} name='species' required defaultValue='dog'>
+        <Select id={`${formId}-species`} name='species' required defaultValue={pet?.species ?? 'dog'}>
           <option value='dog'>Собака</option>
           <option value='cat'>Кошка</option>
         </Select>
       </FormField>
       <FormField id={`${formId}-breed`} label='Порода'>
-        <Input id={`${formId}-breed`} name='breed' />
+        <Input id={`${formId}-breed`} name='breed' defaultValue={pet?.breed ?? ''} />
       </FormField>
       <FormField id={`${formId}-birth-date`} label='Дата рождения'>
-        <Input id={`${formId}-birth-date`} name='birthDate' type='date' />
+        <Input id={`${formId}-birth-date`} name='birthDate' type='date' defaultValue={pet?.birthDate ?? ''} />
       </FormField>
       <FormField id={`${formId}-sex`} label='Пол' required>
-        <Select id={`${formId}-sex`} name='sex' required defaultValue='male'>
+        <Select id={`${formId}-sex`} name='sex' required defaultValue={pet?.sex ?? 'male'}>
           <option value='male'>Самец</option>
           <option value='female'>Самка</option>
         </Select>
       </FormField>
       <FormField id={`${formId}-grooming-plan`} label='План груминга'>
-        <Textarea id={`${formId}-grooming-plan`} name='groomingPlan' />
+        <Textarea id={`${formId}-grooming-plan`} name='groomingPlan' defaultValue={pet?.groomingPlan ?? ''} />
       </FormField>
       <FormField id={`${formId}-interval`} label='Рекомендуемый интервал, дней'>
-        <Input id={`${formId}-interval`} name='recommendedIntervalDays' type='number' min='1' />
+        <Input
+          id={`${formId}-interval`}
+          name='recommendedIntervalDays'
+          type='number'
+          min='1'
+          defaultValue={pet?.recommendedIntervalDays ?? ''}
+        />
       </FormField>
       <FormField id={`${formId}-notes`} label='Заметки'>
-        <Textarea id={`${formId}-notes`} name='notes' />
+        <Textarea id={`${formId}-notes`} name='notes' defaultValue={pet?.notes ?? ''} />
       </FormField>
     </>
   );
@@ -336,23 +407,47 @@ function formatClientOption(client: ClientOption) {
   return client.phone ? `${client.name} — ${client.phone}` : client.name;
 }
 
-function GroomingServiceFields({ formId }: { formId: string }) {
+function GroomingServiceFields({
+  formId,
+  service,
+}: {
+  formId: string;
+  service?: GroomingService;
+}) {
   return (
     <>
       <FormField id={`${formId}-name`} label='Название' required>
-        <Input id={`${formId}-name`} name='name' required />
+        <Input id={`${formId}-name`} name='name' defaultValue={service?.name} required />
       </FormField>
       <FormField id={`${formId}-description`} label='Описание'>
-        <Textarea id={`${formId}-description`} name='description' />
+        <Textarea id={`${formId}-description`} name='description' defaultValue={service?.description ?? ''} />
       </FormField>
       <FormField id={`${formId}-price`} label='Стоимость по умолчанию'>
-        <Input id={`${formId}-price`} name='defaultPrice' type='number' min='0' step='0.01' />
+        <Input
+          id={`${formId}-price`}
+          name='defaultPrice'
+          type='number'
+          min='0'
+          step='0.01'
+          defaultValue={service?.defaultPrice ?? ''}
+        />
       </FormField>
       <FormField id={`${formId}-duration`} label='Продолжительность, минут'>
-        <Input id={`${formId}-duration`} name='defaultDurationMinutes' type='number' min='1' />
+        <Input
+          id={`${formId}-duration`}
+          name='defaultDurationMinutes'
+          type='number'
+          min='1'
+          defaultValue={service?.defaultDurationMinutes ?? ''}
+        />
       </FormField>
       <label className='flex items-center gap-3 text-sm font-medium'>
-        <input name='active' type='checkbox' defaultChecked className='size-4 accent-primary' />
+        <input
+          name='active'
+          type='checkbox'
+          defaultChecked={service?.active ?? true}
+          className='size-4 accent-primary'
+        />
         Активная услуга
       </label>
     </>

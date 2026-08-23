@@ -1,9 +1,13 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 
+import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { getClientById } from '@/services/client.service';
 import { getPetsByClientId } from '@/services/pets.service';
+
+import { EntityFormSheet } from '../../entity-form-sheet';
+import { archiveClientAction } from '../actions';
 
 export default async function ClientPage({
   params,
@@ -19,11 +23,27 @@ export default async function ClientPage({
 
   return (
     <div className='space-y-8'>
-      <div>
-        <Link href='/crm/clients' className='text-sm text-muted-foreground hover:text-foreground'>
-          ← Все клиенты
-        </Link>
-        <h1 className='mt-3 text-2xl font-semibold tracking-tight'>{client.name}</h1>
+      <div className='flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between'>
+        <div>
+          <Link href='/crm/clients' className='text-sm text-muted-foreground hover:text-foreground'>
+            ← Все клиенты
+          </Link>
+          <h1 className='mt-3 text-2xl font-semibold tracking-tight'>{client.name}</h1>
+        </div>
+        {!client.archivedAt && (
+          <div className='flex flex-col gap-2 sm:flex-row'>
+            <EntityFormSheet
+              type='client'
+              actionLabel='Редактировать'
+              client={client}
+            />
+            <form action={archiveClientAction.bind(null, client.id)}>
+              <Button type='submit' variant='outline' className='w-full sm:w-auto'>
+                В архив
+              </Button>
+            </form>
+          </div>
+        )}
       </div>
 
       <Card>
