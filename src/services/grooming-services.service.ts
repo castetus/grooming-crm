@@ -1,6 +1,6 @@
-import { createClient } from "@/lib/supabase/server";
-import type { GroomingService } from "@/types/entities";
-import { mapGroomingService } from "./mappers";
+import { createClient } from '@/lib/supabase/server';
+import type { GroomingService } from '@/types/entities';
+import { mapGroomingService } from './mappers';
 
 export interface CreateGroomingServiceInput {
   name: string;
@@ -17,9 +17,9 @@ export async function getGroomingServices(): Promise<GroomingService[]> {
   const supabase = await createClient();
 
   const { data, error } = await supabase
-    .from("grooming_services")
-    .select("*")
-    .order("name");
+    .from('grooming_services')
+    .select('*')
+    .order('name');
 
   if (error) throw error;
 
@@ -30,10 +30,10 @@ export async function getActiveGroomingServices(): Promise<GroomingService[]> {
   const supabase = await createClient();
 
   const { data, error } = await supabase
-    .from("grooming_services")
-    .select("*")
-    .eq("active", true)
-    .order("name");
+    .from('grooming_services')
+    .select('*')
+    .eq('active', true)
+    .order('name');
 
   if (error) throw error;
 
@@ -46,9 +46,9 @@ export async function getGroomingServiceById(
   const supabase = await createClient();
 
   const { data, error } = await supabase
-    .from("grooming_services")
-    .select("*")
-    .eq("id", id)
+    .from('grooming_services')
+    .select('*')
+    .eq('id', id)
     .maybeSingle();
 
   if (error) throw error;
@@ -62,7 +62,7 @@ export async function createGroomingService(
   const supabase = await createClient();
 
   const { data, error } = await supabase
-    .from("grooming_services")
+    .from('grooming_services')
     .insert({
       name: input.name,
       description: input.description ?? null,
@@ -101,9 +101,9 @@ export async function updateGroomingService(
   }
 
   const { data, error } = await supabase
-    .from("grooming_services")
+    .from('grooming_services')
     .update(payload)
-    .eq("id", id)
+    .eq('id', id)
     .select()
     .single();
 
@@ -116,9 +116,9 @@ export async function deleteGroomingService(id: string): Promise<void> {
   const supabase = await createClient();
 
   const { error } = await supabase
-    .from("grooming_services")
+    .from('grooming_services')
     .delete()
-    .eq("id", id);
+    .eq('id', id);
 
   if (error) throw error;
 }

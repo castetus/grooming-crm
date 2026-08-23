@@ -29,6 +29,7 @@ export type AppointmentStatus =
     notes: string | null;
     createdAt: string;
     updatedAt: string;
+    archivedAt: string | null;
   }
 
   export interface Pet {
@@ -44,6 +45,7 @@ export type AppointmentStatus =
     notes: string | null;
     createdAt: string;
     updatedAt: string;
+    archivedAt: string | null;
   }
 
   export interface Groomer {

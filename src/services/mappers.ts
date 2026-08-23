@@ -20,6 +20,7 @@ export function mapClient(row: any): Client {
     notes: row.notes,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
+    archivedAt: row.archived_at,
   };
 }
 
@@ -37,6 +38,7 @@ export function mapPet(row: any): Pet {
     notes: row.notes,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
+    archivedAt: row.archived_at,
   };
 }
 

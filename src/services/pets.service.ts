@@ -22,6 +22,7 @@ export async function getPets(): Promise<Pet[]> {
   const { data, error } = await supabase
     .from('pets')
     .select('*')
+    .is('archived_at', null)
     .order('name');
 
   if (error) throw error;
@@ -114,13 +115,50 @@ export async function updatePet(
   return mapPet(data);
 }
 
-export async function deletePet(id: string): Promise<void> {
+export async function archivePet(id: string): Promise<Pet> {
   const supabase = await createClient();
 
-  const { error } = await supabase
+  const { data, error } = await supabase
     .from('pets')
-    .delete()
-    .eq('id', id);
+    .update({
+      archived_at: new Date().toISOString(),
+    })
+    .eq('id', id)
+    .select()
+    .single();
 
   if (error) throw error;
+
+  return mapPet(data);
+}
+
+export async function restorePet(id: string): Promise<Pet> {
+  const supabase = await createClient();
+
+  const { data, error } = await supabase
+    .from('pets')
+    .update({
+      archived_at: null,
+    })
+    .eq('id', id)
+    .select()
+    .single();
+
+  if (error) throw error;
+
+  return mapPet(data);
+}
+
+export async function getArchivedPets(): Promise<Pet[]> {
+  const supabase = await createClient();
+
+  const { data, error } = await supabase
+    .from('pets')
+    .select('*')
+    .not('archived_at', 'is', null)
+    .order('name');
+
+  if (error) throw error;
+
+  return data.map(mapPet);
 }

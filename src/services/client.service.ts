@@ -20,6 +20,7 @@ export async function getClients(): Promise<Client[]> {
   const { data, error } = await supabase
     .from('clients')
     .select('*')
+    .is('archived_at', null)
     .order('name');
 
   if (error) throw error;
@@ -99,13 +100,43 @@ export async function updateClient(
   return mapClient(data);
 }
 
-export async function deleteClient(id: string): Promise<void> {
+export async function archiveClient(id: string): Promise<void> {
   const supabase = await createClient();
 
-  const { error } = await supabase
-    .from('clients')
-    .delete()
-    .eq('id', id);
+  const { error } = await supabase.rpc('archive_client', {
+    target_client_id: id,
+  });
 
   if (error) throw error;
+}
+
+export async function restoreClient(id: string): Promise<Client> {
+  const supabase = await createClient();
+
+  const { data, error } = await supabase
+    .from('clients')
+    .update({
+      archived_at: null,
+    })
+    .eq('id', id)
+    .select()
+    .single();
+
+  if (error) throw error;
+
+  return mapClient(data);
+}
+
+export async function getArchivedClients(): Promise<Client[]> {
+  const supabase = await createClient();
+
+  const { data, error } = await supabase
+    .from('clients')
+    .select('*')
+    .not('archived_at', 'is', null)
+    .order('name');
+
+  if (error) throw error;
+
+  return data.map(mapClient);
 }
