@@ -258,7 +258,7 @@ function getAppointmentColor(status: Appointment['status']) {
       return 'border-emerald-600/20 bg-emerald-500 text-white';
     case 'cancelled':
       return 'border-rose-600/20 bg-rose-500 text-white';
-    case 'no_show':
+    case 'pending':
       return 'border-amber-600/20 bg-amber-400 text-amber-950';
     default:
       return 'border-blue-600/20 bg-blue-500 text-white';

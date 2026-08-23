@@ -16,7 +16,7 @@ export type AppointmentStatus =
   | 'confirmed'
   | 'completed'
   | 'cancelled'
-  | 'no_show';
+  | 'pending';
 
   export interface Client {
     id: string;
@@ -53,32 +53,6 @@ export type AppointmentStatus =
     name: string;
     phone: string | null;
     active: boolean;
-    createdAt: string;
-    updatedAt: string;
-  }
-
-  export interface BookingRequest {
-    id: string;
-  
-    clientName: string;
-    phone: string | null;
-    telegramUsername: string | null;
-    preferredLanguage: PreferredLanguage;
-  
-    petName: string;
-    species: PetSpecies;
-    breed: string | null;
-    sex: PetSex;
-  
-    requestedStart: string;
-    requestedEnd: string | null;
-  
-    locationType: LocationType;
-    address: string | null;
-  
-    comment: string | null;
-    status: BookingRequestStatus;
-  
     createdAt: string;
     updatedAt: string;
   }
@@ -133,4 +107,30 @@ export interface GroomingService {
   active: boolean;
   createdAt: string;
   updatedAt: string;
+}
+
+export interface CreateAppointmentInput {
+  clientId: string;
+  petId: string;
+  groomerId?: string | null;
+
+  scheduledStart: string;
+  scheduledEnd: string;
+
+  locationType: LocationType;
+  address?: string | null;
+
+  estimatedPrice?: number | null;
+  status?: AppointmentStatus;
+  notes?: string | null;
+}
+
+export type UpdateAppointmentInput = Partial<
+  Omit<CreateAppointmentInput, "status">
+>;
+
+export interface CompleteAppointmentInput {
+  totalPrice: number;
+  groomingDetails?: string | null;
+  notes?: string | null;
 }

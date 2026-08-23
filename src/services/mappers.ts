@@ -2,7 +2,6 @@ import type {
   Client,
   Pet,
   Groomer,
-  BookingRequest,
   Appointment,
   GroomingSession,
   GroomingService,
@@ -48,28 +47,6 @@ export function mapGroomer(row: any): Groomer {
     name: row.name,
     phone: row.phone,
     active: row.active,
-    createdAt: row.created_at,
-    updatedAt: row.updated_at,
-  };
-}
-
-export function mapBookingRequest(row: any): BookingRequest {
-  return {
-    id: row.id,
-    clientName: row.client_name,
-    phone: row.phone,
-    telegramUsername: row.telegram_username,
-    preferredLanguage: row.preferred_language,
-    petName: row.pet_name,
-    species: row.species,
-    breed: row.breed,
-    sex: row.sex,
-    requestedStart: row.requested_start,
-    requestedEnd: row.requested_end,
-    locationType: row.location_type,
-    address: row.address,
-    comment: row.comment,
-    status: row.status,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
   };

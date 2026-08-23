@@ -2,6 +2,7 @@ import { createClient } from '@/lib/supabase/server';
 import type {
   Appointment,
   AppointmentStatus,
+  CompleteAppointmentInput,
   LocationType,
 } from '@/types/entities';
 import { mapAppointment } from './mappers';
@@ -130,7 +131,7 @@ export async function updateAppointment(
   if (input.estimatedPrice !== undefined) {
     payload.estimated_price = input.estimatedPrice;
   }
-  if (input.status !== undefined) payload.status = input.status;
+
   if (input.notes !== undefined) payload.notes = input.notes;
 
   const { data, error } = await supabase
@@ -154,4 +155,82 @@ export async function deleteAppointment(id: string): Promise<void> {
     .eq('id', id);
 
   if (error) throw error;
+}
+
+export async function confirmAppointment(
+  id: string,
+): Promise<Appointment> {
+  const supabase = await createClient();
+
+  const { data, error } = await supabase
+    .from("appointments")
+    .update({
+      status: "confirmed",
+    })
+    .eq("id", id)
+    .eq("status", "pending")
+    .select()
+    .single();
+
+  if (error) throw error;
+
+  return mapAppointment(data);
+}
+
+export async function cancelAppointment(
+  id: string,
+): Promise<Appointment> {
+  const supabase = await createClient();
+
+  const { data, error } = await supabase
+    .from("appointments")
+    .update({
+      status: "cancelled",
+    })
+    .eq("id", id)
+    .in("status", ["pending", "confirmed"])
+    .select()
+    .single();
+
+  if (error) throw error;
+
+  return mapAppointment(data);
+}
+
+export async function restoreAppointment(
+  id: string,
+): Promise<Appointment> {
+  const supabase = await createClient();
+
+  const { data, error } = await supabase
+    .from("appointments")
+    .update({
+      status: "confirmed",
+    })
+    .eq("id", id)
+    .eq("status", "cancelled")
+    .select()
+    .single();
+
+  if (error) throw error;
+
+  return mapAppointment(data);
+}
+
+export async function completeAppointment(
+  id: string,
+  input: CompleteAppointmentInput,
+): Promise<string> {
+  const supabase = await createClient();
+
+  const { data, error } = await supabase.rpc("complete_appointment", {
+    target_appointment_id: id,
+    session_total_price: input.totalPrice,
+    session_grooming_details: input.groomingDetails ?? null,
+    session_notes: input.notes ?? null,
+  });
+
+  if (error) throw error;
+
+  return data;
 }
