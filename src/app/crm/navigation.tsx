@@ -59,6 +59,7 @@ export function CrmNavigation() {
         <div className="flex items-center gap-1">
           {mobileAction && (
             <EntityFormSheet
+              key={mobileAction.type}
               type={mobileAction.type}
               actionLabel={mobileAction.label}
               mobile
