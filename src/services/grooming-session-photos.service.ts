@@ -1,7 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import type { GroomingSessionPhoto } from "@/types/entities";
 import { mapGroomingSessionPhoto } from "./mappers";
-import { deleteMedia } from "./media.service";
+import { deleteMedia, uploadGroomingPhoto } from "./media.service";
 
 export interface CreateGroomingSessionPhotoInput {
   groomingSessionId: string;
@@ -80,17 +80,28 @@ export async function updateGroomingSessionPhoto(
   return mapGroomingSessionPhoto(data);
 }
 
-export async function deleteGroomingSessionPhoto(
-  id: string,
-): Promise<void> {
-  const supabase = await createClient();
+export async function addGroomingSessionPhotos(
+  groomingSessionId: string,
+  files: File[],
+): Promise<GroomingSessionPhoto[]> {
+  const photos: GroomingSessionPhoto[] = [];
 
-  const { error } = await supabase
-    .from("grooming_session_photos")
-    .delete()
-    .eq("id", id);
+  for (let i = 0; i < files.length; i++) {
+    const storagePath = await uploadGroomingPhoto(
+      groomingSessionId,
+      files[i],
+    );
 
-  if (error) throw error;
+    const photo = await createGroomingSessionPhoto({
+      groomingSessionId,
+      storagePath,
+      sortOrder: i,
+    });
+
+    photos.push(photo);
+  }
+
+  return photos;
 }
 
 export async function removeGroomingSessionPhoto(

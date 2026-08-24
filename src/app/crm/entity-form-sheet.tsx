@@ -306,7 +306,7 @@ function EntityForm({
   );
 }
 
-type StatusAction = 'confirm' | 'cancel' | 'restore' | 'complete';
+type StatusAction = 'confirm' | 'cancel' | 'restore';
 
 const statusActionCopy: Record<StatusAction, { title: string; description: string; label: string }> = {
   confirm: {
@@ -324,11 +324,6 @@ const statusActionCopy: Record<StatusAction, { title: string; description: strin
     description: 'Запись снова получит статус «Подтверждена».',
     label: 'Восстановить',
   },
-  complete: {
-    title: 'Завершить запись?',
-    description: 'Будет создана завершённая сессия груминга. Это действие нельзя отменить.',
-    label: 'Завершить',
-  },
 };
 
 function AppointmentActions({
@@ -339,6 +334,7 @@ function AppointmentActions({
   onStatusChanged: () => void;
 }) {
   const [statusAction, setStatusAction] = useState<StatusAction>();
+  const [isCompletionOpen, setIsCompletionOpen] = useState(false);
   const [isPending, startTransition] = useTransition();
 
   function applyStatusChange() {
@@ -357,14 +353,6 @@ function AppointmentActions({
 
       if (statusAction === 'restore') {
         await restoreAppointmentAction(appointment.id);
-      }
-
-      if (statusAction === 'complete') {
-        await completeAppointmentAction(
-          appointment.id,
-          appointment.estimatedPrice ?? 0,
-          appointment.notes,
-        );
       }
 
       setStatusAction(undefined);
@@ -395,7 +383,7 @@ function AppointmentActions({
         )}
         {appointment.status === 'confirmed' && (
           <div className="grid grid-cols-2 gap-3">
-            <Button type="button" onClick={() => setStatusAction('complete')}>
+            <Button type="button" onClick={() => setIsCompletionOpen(true)}>
               Завершить
             </Button>
             <Button
@@ -427,7 +415,96 @@ function AppointmentActions({
         }}
         onConfirm={applyStatusChange}
       />
+      <CompleteAppointmentDialog
+        appointment={appointment}
+        open={isCompletionOpen}
+        onOpenChange={setIsCompletionOpen}
+        onCompleted={onStatusChanged}
+      />
     </>
+  );
+}
+
+function CompleteAppointmentDialog({
+  appointment,
+  open,
+  onOpenChange,
+  onCompleted,
+}: {
+  appointment: Appointment;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  onCompleted: () => void;
+}) {
+  const [isPending, setIsPending] = useState(false);
+
+  async function handleAction(formData: FormData) {
+    setIsPending(true);
+
+    try {
+      await completeAppointmentAction(appointment.id, formData);
+      onOpenChange(false);
+      onCompleted();
+    } finally {
+      setIsPending(false);
+    }
+  }
+
+  return (
+    <Dialog.Root open={open} onOpenChange={onOpenChange}>
+      <Dialog.Portal>
+        <Dialog.Backdrop className="fixed inset-0 z-[60] bg-black/80 transition-opacity data-ending-style:opacity-0 data-starting-style:opacity-0" />
+        <Dialog.Popup className="fixed left-1/2 top-1/2 z-[60] max-h-[calc(100dvh-2rem)] w-[calc(100%-2rem)] max-w-lg -translate-x-1/2 -translate-y-1/2 overflow-y-auto rounded-2xl border bg-popover p-6 text-popover-foreground shadow-lg">
+          <Dialog.Title className="text-base font-medium">Завершение груминга</Dialog.Title>
+          <Dialog.Description className="mt-2 text-sm text-muted-foreground">
+            Заполните результаты и добавьте фотографии после груминга.
+          </Dialog.Description>
+          <form action={handleAction} className="mt-6 space-y-5">
+            <FormField id="completion-price" label="Итоговая стоимость" required>
+              <Input
+                id="completion-price"
+                name="totalPrice"
+                type="number"
+                min="0"
+                step="0.01"
+                defaultValue={appointment.estimatedPrice ?? ''}
+                required
+              />
+            </FormField>
+            <FormField id="completion-details" label="Что было сделано">
+              <Textarea id="completion-details" name="groomingDetails" />
+            </FormField>
+            <FormField id="completion-notes" label="Заметки">
+              <Textarea
+                id="completion-notes"
+                name="notes"
+                defaultValue={appointment.notes ?? ''}
+              />
+            </FormField>
+            <FormField id="completion-photos" label="Фотографии после груминга">
+              <Input
+                id="completion-photos"
+                name="photos"
+                type="file"
+                accept="image/*"
+                multiple
+              />
+            </FormField>
+            <div className="flex justify-end gap-3 pt-1">
+              <Dialog.Close
+                disabled={isPending}
+                render={<Button type="button" variant="outline" />}
+              >
+                Назад
+              </Dialog.Close>
+              <Button type="submit" disabled={isPending}>
+                {isPending ? 'Завершение...' : 'Завершить'}
+              </Button>
+            </div>
+          </form>
+        </Dialog.Popup>
+      </Dialog.Portal>
+    </Dialog.Root>
   );
 }
 
@@ -565,6 +642,15 @@ function PetFields({
       )}
       <FormField id={`${formId}-name`} label='Кличка' required>
         <Input id={`${formId}-name`} name='name' defaultValue={pet?.name} required />
+      </FormField>
+      <FormField id={`${formId}-photo`} label='Фотография'>
+        <Input id={`${formId}-photo`} name='photo' type='file' accept='image/*' />
+        {pet?.photoPath && (
+          <div className="space-y-1 text-xs text-muted-foreground">
+            <p className="break-all">{pet.photoPath}</p>
+            <p>Новый файл заменит текущую фотографию.</p>
+          </div>
+        )}
       </FormField>
       <FormField id={`${formId}-species`} label='Вид' required>
         <Select id={`${formId}-species`} name='species' required defaultValue={pet?.species ?? 'dog'}>

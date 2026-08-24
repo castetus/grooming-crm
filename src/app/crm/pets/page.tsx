@@ -10,6 +10,7 @@ import {
 } from '@/components/ui/card';
 import { DebouncedSearchInput } from '@/components/debounced-search-input';
 import { getClients } from '@/services/client.service';
+import { getMediaUrl } from '@/services/media.service';
 import { searchPets } from '@/services/pets.service';
 
 import { PageHeader } from '../page-header';
@@ -23,6 +24,14 @@ export default async function PetsPage({
   const query = (await searchParams).q ?? '';
   const [pets, clients] = await Promise.all([searchPets(query), getClients()]);
   const clientNames = new Map(clients.map((client) => [client.id, client.name]));
+  const photoUrls = new Map(
+    await Promise.all(
+      pets.map(async (pet) => [
+        pet.id,
+        pet.photoPath ? await getMediaUrl(pet.photoPath) : null,
+      ] as const),
+    ),
+  );
 
   return (
     <div className='space-y-6'>
@@ -85,15 +94,28 @@ export default async function PetsPage({
             {pets.map((pet) => (
               <Card key={pet.id} className='transition-colors hover:bg-muted/30'>
                 <CardHeader>
-                  <CardTitle>
-                    <Link
-                      href={`/crm/pets/${pet.id}`}
-                      className='underline underline-offset-4'
-                    >
-                      {pet.name}
-                    </Link>
-                  </CardTitle>
-                  <CardDescription>{clientNames.get(pet.clientId) ?? 'Клиент не указан'}</CardDescription>
+                  <div className="flex items-center gap-3">
+                    {photoUrls.get(pet.id) && (
+                      <img
+                        src={photoUrls.get(pet.id) ?? undefined}
+                        alt={`Фотография питомца ${pet.name}`}
+                        className="size-12 shrink-0 rounded-xl object-cover"
+                      />
+                    )}
+                    <div className="min-w-0">
+                      <CardTitle>
+                        <Link
+                          href={`/crm/pets/${pet.id}`}
+                          className='underline underline-offset-4'
+                        >
+                          {pet.name}
+                        </Link>
+                      </CardTitle>
+                      <CardDescription>
+                        {clientNames.get(pet.clientId) ?? 'Клиент не указан'}
+                      </CardDescription>
+                    </div>
+                  </div>
                   <CardAction>
                     <EntityFormSheet
                       type='pet'

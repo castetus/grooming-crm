@@ -4,6 +4,7 @@ import { notFound } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { getClientById } from '@/services/client.service';
+import { getMediaUrl } from '@/services/media.service';
 import { getPetById } from '@/services/pets.service';
 
 import { EntityFormSheet } from '../../entity-form-sheet';
@@ -21,7 +22,10 @@ export default async function PetPage({
     notFound();
   }
 
-  const owner = await getClientById(pet.clientId);
+  const [owner, photoUrl] = await Promise.all([
+    getClientById(pet.clientId),
+    pet.photoPath ? getMediaUrl(pet.photoPath) : null,
+  ]);
 
   return (
     <div className='space-y-8'>
@@ -49,6 +53,16 @@ export default async function PetPage({
           </div>
         )}
       </div>
+
+      {photoUrl && (
+        <div className="overflow-hidden rounded-2xl border bg-muted">
+          <img
+            src={photoUrl}
+            alt={`Фотография питомца ${pet.name}`}
+            className="max-h-[32rem] w-full object-cover"
+          />
+        </div>
+      )}
 
       <Card>
         <CardHeader>

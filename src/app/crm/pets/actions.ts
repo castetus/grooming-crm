@@ -4,6 +4,7 @@ import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 
 import { createClientEntity, getClients } from '@/services/client.service';
+import { setPetPhoto } from '@/services/media.service';
 import { archivePet, createPet, updatePet } from '@/services/pets.service';
 
 export async function getClientsForSelect() {
@@ -52,6 +53,11 @@ export async function createPetAction(formData: FormData) {
     recommendedIntervalDays: getNumber(formData, 'recommendedIntervalDays'),
     notes: getString(formData, 'notes'),
   });
+  const photo = getImage(formData, 'photo');
+
+  if (photo) {
+    await setPetPhoto(pet.id, photo);
+  }
 
   revalidatePath('/crm/clients');
   revalidatePath('/crm/pets');
@@ -84,6 +90,11 @@ export async function updatePetAction(id: string, formData: FormData) {
     recommendedIntervalDays: getNumber(formData, 'recommendedIntervalDays'),
     notes: getString(formData, 'notes'),
   });
+  const photo = getImage(formData, 'photo');
+
+  if (photo) {
+    await setPetPhoto(id, photo);
+  }
 
   revalidatePath('/crm/pets');
   revalidatePath(`/crm/pets/${id}`);
@@ -106,4 +117,18 @@ function getNumber(formData: FormData, name: string) {
   const number = Number(value);
 
   return Number.isFinite(number) ? number : null;
+}
+
+function getImage(formData: FormData, name: string) {
+  const value = formData.get(name);
+
+  if (!(value instanceof File) || value.size === 0) {
+    return null;
+  }
+
+  if (!value.type.startsWith('image/')) {
+    throw new Error('Можно загружать только изображения');
+  }
+
+  return value;
 }

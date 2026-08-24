@@ -2,6 +2,7 @@
 
 import { getClients } from '@/services/client.service';
 import { getActiveGroomingServices } from '@/services/grooming-services.service';
+import { addGroomingSessionPhotos } from '@/services/grooming-session-photos.service';
 import { getPets } from '@/services/pets.service';
 import {
   cancelAppointment,
@@ -65,11 +66,41 @@ export async function restoreAppointmentAction(id: string) {
 
 export async function completeAppointmentAction(
   id: string,
-  totalPrice: number,
-  notes: string | null,
+  formData: FormData,
 ) {
-  await completeAppointment(id, { totalPrice, notes });
+  const totalPrice = getNumber(formData, 'totalPrice');
+
+  if (totalPrice === null || totalPrice < 0) {
+    throw new Error('Укажите итоговую стоимость');
+  }
+
+  const sessionId = await completeAppointment(id, {
+    totalPrice,
+    groomingDetails: getString(formData, 'groomingDetails'),
+    notes: getString(formData, 'notes'),
+  });
+  const photos = getImages(formData, 'photos');
+
+  if (photos.length) {
+    await addGroomingSessionPhotos(sessionId, photos);
+  }
+
   revalidatePath('/crm');
+  revalidatePath('/crm/history');
+}
+
+function getImages(formData: FormData, name: string) {
+  return formData.getAll(name).filter((value): value is File => {
+    if (!(value instanceof File) || value.size === 0) {
+      return false;
+    }
+
+    if (!value.type.startsWith('image/')) {
+      throw new Error('Можно загружать только изображения');
+    }
+
+    return true;
+  });
 }
 
 function getAppointmentInput(formData: FormData): CreateAppointmentInput {
