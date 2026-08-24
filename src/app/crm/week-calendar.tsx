@@ -92,6 +92,10 @@ export function WeekCalendar({
             const dayAppointments = weekAppointments.filter((appointment) =>
               isSameDay(new Date(appointment.scheduledStart), day),
             );
+            const layeredDayAppointments = [...dayAppointments].sort(
+              (first, second) =>
+                new Date(first.createdAt).getTime() - new Date(second.createdAt).getTime(),
+            );
 
             return (
               <div key={day.toISOString()} className='flex h-24 border-b last:border-b-0'>
@@ -107,7 +111,7 @@ export function WeekCalendar({
                     setSelectedDate(formatInputDate(day));
                   }}
                 >
-                  {dayAppointments.map((appointment) => {
+                  {layeredDayAppointments.map((appointment, index) => {
                     const start = new Date(appointment.scheduledStart);
                     const end = new Date(appointment.scheduledEnd);
                     const startPosition = getHourValue(start) - startHour;
@@ -124,6 +128,7 @@ export function WeekCalendar({
                         style={{
                           left: startPosition * hourWidth,
                           width: Math.max(duration * hourWidth - 4, 76),
+                          zIndex: appointment.status === 'cancelled' ? 0 : index + 1,
                         }}
                         onClick={(event) => {
                           event.stopPropagation();
