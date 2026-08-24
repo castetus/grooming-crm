@@ -101,7 +101,12 @@ export function EntityFormSheet({
   const [clientId, setClientId] = useState<string>();
   const [clients, setClients] = useState<ClientOption[]>();
   const [appointmentOptions, setAppointmentOptions] = useState<AppointmentFormOptions>();
-  const isEditing = Boolean(groomingService || client || pet || appointment);
+  const isEditing = Boolean(
+    (formType === 'grooming-service' && groomingService)
+      || (formType === 'client' && client)
+      || (formType === 'pet' && pet)
+      || (formType === 'appointment' && appointment),
+  );
   const isSheetOpen = open ?? internalOpen;
   const copy = isEditing
     ? {
@@ -176,6 +181,12 @@ export function EntityFormSheet({
           appointmentDate={appointmentDate}
           appointment={appointment}
           appointmentOptions={appointmentOptions}
+          onCreateClientRequested={() => setFormType('client')}
+          onCreatePetRequested={(selectedClientId) => {
+            setClientId(selectedClientId || undefined);
+            setFormType('pet');
+            void loadClients();
+          }}
           onClientCreated={(createdClientId) => {
             setClientId(createdClientId);
             setFormType('pet');
@@ -200,6 +211,8 @@ function EntityForm({
   appointmentDate,
   appointment,
   appointmentOptions,
+  onCreateClientRequested,
+  onCreatePetRequested,
   onClientCreated,
   onPetCreated,
   onGroomingServiceCreated,
@@ -214,6 +227,8 @@ function EntityForm({
   appointmentDate?: string;
   appointment?: Appointment;
   appointmentOptions?: AppointmentFormOptions;
+  onCreateClientRequested: () => void;
+  onCreatePetRequested: (clientId: string) => void;
   onClientCreated: (clientId: string) => void;
   onPetCreated: () => void;
   onGroomingServiceCreated: () => void;
@@ -287,6 +302,8 @@ function EntityForm({
             appointmentDate={appointmentDate}
             appointment={appointment}
             options={appointmentOptions}
+            onCreateClient={onCreateClientRequested}
+            onCreatePet={onCreatePetRequested}
           />
         )}
       </div>
@@ -799,11 +816,15 @@ function AppointmentFields({
   appointmentDate,
   options,
   appointment,
+  onCreateClient,
+  onCreatePet,
 }: {
   formId: string;
   appointmentDate?: string;
   options?: AppointmentFormOptions;
   appointment?: Appointment;
+  onCreateClient: () => void;
+  onCreatePet: (clientId: string) => void;
 }) {
   const [selectedClientId, setSelectedClientId] = useState(appointment?.clientId ?? '');
   const [selectedPetId, setSelectedPetId] = useState(appointment?.petId ?? '');
@@ -856,6 +877,16 @@ function AppointmentFields({
               </option>
             ))}
           </Select>
+          <Button
+            type="button"
+            variant="outline"
+            size="icon"
+            aria-label="Добавить клиента"
+            title="Добавить клиента"
+            onClick={onCreateClient}
+          >
+            <HugeiconsIcon icon={Add01Icon} strokeWidth={2} />
+          </Button>
           {selectedClientId && (
             <Link
               href={`/crm/clients/${selectedClientId}`}
@@ -901,6 +932,16 @@ function AppointmentFields({
               </option>
             ))}
           </Select>
+          <Button
+            type="button"
+            variant="outline"
+            size="icon"
+            aria-label="Добавить питомца"
+            title="Добавить питомца"
+            onClick={() => onCreatePet(selectedClientId)}
+          >
+            <HugeiconsIcon icon={Add01Icon} strokeWidth={2} />
+          </Button>
           {selectedPetId && (
             <Link
               href={`/crm/pets/${selectedPetId}`}
