@@ -59,28 +59,38 @@ export type AppointmentStatus =
     updatedAt: string;
   }
 
-  export interface Appointment {
-    id: string;
-  
-    clientId: string;
-    petId: string;
-    groomerId: string | null;
-    bookingRequestId: string | null;
-  
-    scheduledStart: string;
-    scheduledEnd: string;
-  
-    locationType: LocationType;
-    address: string | null;
-  
-    estimatedPrice: number | null;
-  
-    status: AppointmentStatus;
-    notes: string | null;
-  
-    createdAt: string;
-    updatedAt: string;
-  }
+export interface Appointment {
+  id: string;
+
+  clientId: string | null;
+  petId: string | null;
+
+  // Данные, пришедшие с заявкой
+  clientName: string | null;
+  phone: string | null;
+  telegramUsername: string | null;
+
+  petName: string | null;
+  species: PetSpecies | null;
+  breed: string | null;
+  sex: PetSex | null;
+
+  groomerId: string | null;
+
+  scheduledStart: string;
+  scheduledEnd: string;
+
+  locationType: LocationType;
+  address: string | null;
+
+  estimatedPrice: number | null;
+  status: AppointmentStatus;
+
+  notes: string | null;
+
+  createdAt: string;
+  updatedAt: string;
+}
 
   export interface GroomingSession {
     id: string;

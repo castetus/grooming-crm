@@ -58,17 +58,32 @@ export function mapGroomer(row: any): Groomer {
 export function mapAppointment(row: any): Appointment {
   return {
     id: row.id,
+
     clientId: row.client_id,
     petId: row.pet_id,
+
+    clientName: row.client_name,
+    phone: row.phone,
+    telegramUsername: row.telegram_username,
+
+    petName: row.pet_name,
+    species: row.species,
+    breed: row.breed,
+    sex: row.sex,
+
     groomerId: row.groomer_id,
-    bookingRequestId: row.booking_request_id,
+
     scheduledStart: row.scheduled_start,
     scheduledEnd: row.scheduled_end,
+
     locationType: row.location_type,
     address: row.address,
+
     estimatedPrice: row.estimated_price,
     status: row.status,
+
     notes: row.notes,
+
     createdAt: row.created_at,
     updatedAt: row.updated_at,
   };
