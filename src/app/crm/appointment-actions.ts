@@ -1,19 +1,31 @@
 'use server';
 
-import { getClients } from '@/services/client.service';
+import { createClientEntity, getClients } from '@/services/client.service';
 import { getActiveGroomingServices } from '@/services/grooming-services.service';
 import { addGroomingSessionPhotos } from '@/services/grooming-session-photos.service';
-import { getPets } from '@/services/pets.service';
+import { createPet, getPetById, getPets, updatePet } from '@/services/pets.service';
 import {
   cancelAppointment,
   completeAppointment,
   confirmAppointment,
   createAppointment,
+  getAppointmentById,
   type CreateAppointmentInput,
   restoreAppointment,
   updateAppointment,
 } from '@/services/appointments.service';
 import { revalidatePath } from 'next/cache';
+import type { PetSex, PetSpecies } from '@/types/entities';
+
+interface AppointmentRequestData {
+  clientName: string | null;
+  phone: string | null;
+  telegramUsername: string | null;
+  petName: string | null;
+  species: PetSpecies | null;
+  breed: string | null;
+  sex: PetSex | null;
+}
 
 export async function getAppointmentFormOptions() {
   const [clients, pets, services] = await Promise.all([
@@ -45,8 +57,100 @@ export async function createAppointmentAction(formData: FormData) {
 }
 
 export async function updateAppointmentAction(id: string, formData: FormData) {
-  await updateAppointment(id, getAppointmentInput(formData));
+  await updateAppointment(id, { ...getAppointmentInput(formData), status: undefined });
   revalidatePath('/crm');
+}
+
+export async function resolvePendingAppointmentAction(id: string, formData: FormData) {
+  const appointment = await getAppointmentById(id);
+
+  if (!appointment || appointment.status !== 'pending') {
+    throw new Error('Ожидающая запись не найдена');
+  }
+
+  const { clientId, petId } = await resolveAppointmentRelations(appointment, formData);
+  formData.set('clientId', clientId);
+  formData.set('petId', petId);
+  await updateAppointment(id, getAppointmentInput(formData));
+
+  revalidatePath('/crm');
+  revalidatePath('/crm/clients');
+  revalidatePath('/crm/pets');
+}
+
+export async function createAppointmentFromRequestAction(
+  requestData: AppointmentRequestData,
+  formData: FormData,
+) {
+  const { clientId, petId } = await resolveAppointmentRelations(requestData, formData);
+
+  formData.set('clientId', clientId);
+  formData.set('petId', petId);
+  await createAppointment(getAppointmentInput(formData));
+
+  revalidatePath('/crm');
+  revalidatePath('/crm/clients');
+  revalidatePath('/crm/pets');
+}
+
+async function resolveAppointmentRelations(
+  requestData: AppointmentRequestData,
+  formData: FormData,
+) {
+  const note = getString(formData, 'notes');
+  let clientId = getString(formData, 'clientId');
+  let petId = getString(formData, 'petId');
+
+  if (petId) {
+    const pet = await getPetById(petId);
+
+    if (!pet) {
+      throw new Error('Питомец не найден');
+    }
+
+    if (clientId && pet.clientId !== clientId) {
+      throw new Error('Питомец не принадлежит выбранному клиенту');
+    }
+
+    clientId = pet.clientId;
+
+    if (note && !pet.notes) {
+      await updatePet(pet.id, { notes: note });
+    }
+  }
+
+  if (!clientId) {
+    if (!requestData.clientName) {
+      throw new Error('В заявке не указано имя клиента');
+    }
+
+    const client = await createClientEntity({
+      name: requestData.clientName,
+      phone: requestData.phone,
+      telegramUsername: requestData.telegramUsername,
+    });
+
+    clientId = client.id;
+  }
+
+  if (!petId) {
+    if (!requestData.petName || !requestData.species || !requestData.sex) {
+      throw new Error('В заявке недостаточно данных для создания питомца');
+    }
+
+    const pet = await createPet({
+      clientId,
+      name: requestData.petName,
+      species: requestData.species,
+      breed: requestData.breed,
+      sex: requestData.sex,
+      notes: note,
+    });
+
+    petId = pet.id;
+  }
+
+  return { clientId, petId };
 }
 
 export async function confirmAppointmentAction(id: string) {

@@ -11,7 +11,6 @@ export interface CreateAppointmentInput {
   clientId: string;
   petId: string;
   groomerId?: string | null;
-  bookingRequestId?: string | null;
 
   scheduledStart: string;
   scheduledEnd: string;
@@ -84,7 +83,6 @@ export async function createAppointment(
       client_id: input.clientId,
       pet_id: input.petId,
       groomer_id: input.groomerId ?? null,
-      booking_request_id: input.bookingRequestId ?? null,
 
       scheduled_start: input.scheduledStart,
       scheduled_end: input.scheduledEnd,
@@ -115,9 +113,6 @@ export async function updateAppointment(
   if (input.clientId !== undefined) payload.client_id = input.clientId;
   if (input.petId !== undefined) payload.pet_id = input.petId;
   if (input.groomerId !== undefined) payload.groomer_id = input.groomerId;
-  if (input.bookingRequestId !== undefined) {
-    payload.booking_request_id = input.bookingRequestId;
-  }
   if (input.scheduledStart !== undefined) {
     payload.scheduled_start = input.scheduledStart;
   }
@@ -131,6 +126,7 @@ export async function updateAppointment(
   if (input.estimatedPrice !== undefined) {
     payload.estimated_price = input.estimatedPrice;
   }
+  if (input.status !== undefined) payload.status = input.status;
 
   if (input.notes !== undefined) payload.notes = input.notes;
 

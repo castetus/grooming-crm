@@ -6,12 +6,6 @@ export type PetSex = 'male' | 'female';
 
 export type LocationType = 'salon' | 'mobile';
 
-export type BookingRequestStatus =
-  | 'pending'
-  | 'approved'
-  | 'rejected'
-  | 'expired';
-
 export type AppointmentStatus =
   | 'confirmed'
   | 'completed'
@@ -61,6 +55,7 @@ export type AppointmentStatus =
 
 export interface Appointment {
   id: string;
+  temporary?: boolean;
 
   clientId: string | null;
   petId: string | null;

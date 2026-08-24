@@ -33,8 +33,10 @@ import {
   cancelAppointmentAction,
   completeAppointmentAction,
   confirmAppointmentAction,
+  createAppointmentFromRequestAction,
   createAppointmentAction,
   getAppointmentFormOptions,
+  resolvePendingAppointmentAction,
   restoreAppointmentAction,
   updateAppointmentAction,
 } from './appointment-actions';
@@ -240,7 +242,30 @@ function EntityForm({
     if (type !== 'client') {
       if (type === 'appointment') {
         if (appointment) {
-          await updateAppointmentAction(appointment.id, formData);
+          if (
+            appointment.status === 'pending'
+            && (!appointment.clientId || !appointment.petId)
+          ) {
+            if (appointment.temporary) {
+              await createAppointmentFromRequestAction({
+                clientName: appointment.clientName,
+                phone: appointment.phone,
+                telegramUsername: appointment.telegramUsername,
+                petName: appointment.petName,
+                species: appointment.species,
+                breed: appointment.breed,
+                sex: appointment.sex,
+              }, formData);
+            } else {
+              await resolvePendingAppointmentAction(appointment.id, formData);
+            }
+          } else {
+            await updateAppointmentAction(appointment.id, formData);
+
+            if (appointment.status === 'pending') {
+              await confirmAppointmentAction(appointment.id);
+            }
+          }
         } else {
           await createAppointmentAction(formData);
         }
@@ -323,14 +348,9 @@ function EntityForm({
   );
 }
 
-type StatusAction = 'confirm' | 'cancel' | 'restore';
+type StatusAction = 'cancel' | 'restore';
 
 const statusActionCopy: Record<StatusAction, { title: string; description: string; label: string }> = {
-  confirm: {
-    title: 'Подтвердить запись?',
-    description: 'Запись получит статус «Подтверждена».',
-    label: 'Подтвердить',
-  },
   cancel: {
     title: 'Отменить запись?',
     description: 'Запись будет отменена. Позже её можно будет восстановить.',
@@ -360,10 +380,6 @@ function AppointmentActions({
     }
 
     startTransition(async () => {
-      if (statusAction === 'confirm') {
-        await confirmAppointmentAction(appointment.id);
-      }
-
       if (statusAction === 'cancel') {
         await cancelAppointmentAction(appointment.id);
       }
@@ -386,7 +402,7 @@ function AppointmentActions({
       <div className="border-t p-6">
         {appointment.status === 'pending' && (
           <div className="grid grid-cols-2 gap-3">
-            <Button type="button" onClick={() => setStatusAction('confirm')}>
+            <Button type="submit">
               Подтвердить
             </Button>
             <Button
@@ -853,10 +869,14 @@ function AppointmentFields({
     (total, service) => total + (service.defaultPrice ?? 0),
     0,
   );
+  const isUnlinkedPending = Boolean(
+    appointment?.status === 'pending' && (!appointment.clientId || !appointment.petId),
+  );
 
   return (
     <>
-      <FormField id={`${formId}-client`} label='Клиент' required>
+      {appointment && <AppointmentRequestData appointment={appointment} />}
+      <FormField id={`${formId}-client`} label='Клиент' required={!isUnlinkedPending}>
         <div className='flex gap-2'>
           <Select
             id={`${formId}-client`}
@@ -864,29 +884,37 @@ function AppointmentFields({
             value={selectedClientId}
             className='min-w-0'
             disabled={!options}
-            required
+            required={!isUnlinkedPending}
             onChange={(event) => {
               setSelectedClientId(event.target.value);
               setSelectedPetId('');
             }}
           >
-            <option value=''>{options ? 'Выберите клиента' : 'Загрузка клиентов...'}</option>
+            <option value=''>
+              {!options
+                ? 'Загрузка клиентов...'
+                : isUnlinkedPending
+                  ? 'Создать из данных заявки'
+                  : 'Выберите клиента'}
+            </option>
             {options?.clients.map((clientOption) => (
               <option key={clientOption.id} value={clientOption.id}>
                 {formatClientOption(clientOption)}
               </option>
             ))}
           </Select>
-          <Button
-            type="button"
-            variant="outline"
-            size="icon"
-            aria-label="Добавить клиента"
-            title="Добавить клиента"
-            onClick={onCreateClient}
-          >
-            <HugeiconsIcon icon={Add01Icon} strokeWidth={2} />
-          </Button>
+          {!isUnlinkedPending && (
+            <Button
+              type="button"
+              variant="outline"
+              size="icon"
+              aria-label="Добавить клиента"
+              title="Добавить клиента"
+              onClick={onCreateClient}
+            >
+              <HugeiconsIcon icon={Add01Icon} strokeWidth={2} />
+            </Button>
+          )}
           {selectedClientId && (
             <Link
               href={`/crm/clients/${selectedClientId}`}
@@ -899,7 +927,7 @@ function AppointmentFields({
           )}
         </div>
       </FormField>
-      <FormField id={`${formId}-pet`} label='Питомец' required>
+      <FormField id={`${formId}-pet`} label='Питомец' required={!isUnlinkedPending}>
         <div className='flex gap-2'>
           <Select
             id={`${formId}-pet`}
@@ -907,7 +935,7 @@ function AppointmentFields({
             value={selectedPetId}
             className='min-w-0'
             disabled={!options}
-            required
+            required={!isUnlinkedPending}
             onChange={(event) => {
               const petId = event.target.value;
               const pet = options?.pets.find((petOption) => petOption.id === petId);
@@ -922,7 +950,9 @@ function AppointmentFields({
             <option value=''>
               {!options
                 ? 'Загрузка питомцев...'
-                : availablePets.length
+                : isUnlinkedPending
+                  ? 'Создать из данных заявки'
+                  : availablePets.length
                   ? 'Выберите питомца'
                   : 'У клиента нет питомцев'}
             </option>
@@ -932,16 +962,18 @@ function AppointmentFields({
               </option>
             ))}
           </Select>
-          <Button
-            type="button"
-            variant="outline"
-            size="icon"
-            aria-label="Добавить питомца"
-            title="Добавить питомца"
-            onClick={() => onCreatePet(selectedClientId)}
-          >
-            <HugeiconsIcon icon={Add01Icon} strokeWidth={2} />
-          </Button>
+          {!isUnlinkedPending && (
+            <Button
+              type="button"
+              variant="outline"
+              size="icon"
+              aria-label="Добавить питомца"
+              title="Добавить питомца"
+              onClick={() => onCreatePet(selectedClientId)}
+            >
+              <HugeiconsIcon icon={Add01Icon} strokeWidth={2} />
+            </Button>
+          )}
           {selectedPetId && (
             <Link
               href={`/crm/pets/${selectedPetId}`}
@@ -1135,6 +1167,99 @@ function AppointmentFields({
       </FormField>
     </>
   );
+}
+
+function AppointmentRequestData({ appointment }: { appointment: Appointment }) {
+  const isUnlinked = !appointment.clientId || !appointment.petId;
+  const hasClientData = Boolean(
+    !appointment.clientId
+      && (appointment.clientName || appointment.phone || appointment.telegramUsername),
+  );
+  const hasPetData = Boolean(
+    !appointment.petId
+      && (appointment.petName || appointment.species || appointment.breed || appointment.sex),
+  );
+
+  if (!isUnlinked || (!hasClientData && !hasPetData && !appointment.notes)) {
+    return null;
+  }
+
+  return (
+    <div className="space-y-4 rounded-xl border bg-muted/30 p-4">
+      <p className="font-medium">Данные из заявки</p>
+      <RequestDataField
+        label="Желаемые дата и время"
+        value={formatRequestedDateTime(appointment.scheduledStart, appointment.scheduledEnd)}
+      />
+      <div className="grid gap-4 sm:grid-cols-2">
+        {hasClientData && (
+          <div className="space-y-2 text-sm">
+            <p className="font-medium">Клиент</p>
+            {appointment.clientName && (
+              <RequestDataField label="Имя" value={appointment.clientName} />
+            )}
+            {appointment.phone && (
+              <RequestDataField label="Телефон" value={appointment.phone} />
+            )}
+            {appointment.telegramUsername && (
+              <RequestDataField label="Telegram" value={appointment.telegramUsername} />
+            )}
+          </div>
+        )}
+        {hasPetData && (
+          <div className="space-y-2 text-sm">
+            <p className="font-medium">Питомец</p>
+            {appointment.petName && (
+              <RequestDataField label="Кличка" value={appointment.petName} />
+            )}
+            {appointment.species && (
+              <RequestDataField
+                label="Вид"
+                value={appointment.species === 'dog' ? 'Собака' : 'Кошка'}
+              />
+            )}
+            {appointment.breed && (
+              <RequestDataField label="Порода" value={appointment.breed} />
+            )}
+            {appointment.sex && (
+              <RequestDataField
+                label="Пол"
+                value={appointment.sex === 'female' ? 'Самка' : 'Самец'}
+              />
+            )}
+          </div>
+        )}
+      </div>
+      {appointment.notes && (
+        <RequestDataField label="Комментарий клиента" value={appointment.notes} />
+      )}
+    </div>
+  );
+}
+
+function RequestDataField({ label, value }: { label: string; value: string }) {
+  return (
+    <div>
+      <p className="text-xs text-muted-foreground">{label}</p>
+      <p className="whitespace-pre-wrap">{value}</p>
+    </div>
+  );
+}
+
+function formatRequestedDateTime(startValue: string, endValue: string) {
+  const start = new Date(startValue);
+  const end = new Date(endValue);
+  const date = new Intl.DateTimeFormat('ru-RU', {
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+  }).format(start);
+  const time = new Intl.DateTimeFormat('ru-RU', {
+    hour: '2-digit',
+    minute: '2-digit',
+  });
+
+  return `${date}, ${time.format(start)}–${time.format(end)}`;
 }
 
 function FormField({

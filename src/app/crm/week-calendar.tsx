@@ -138,10 +138,14 @@ export function WeekCalendar({
                           <p className='shrink-0'>{formatPrice(appointment.estimatedPrice)}</p>
                         </div>
                         <p className='mt-1 truncate text-sm'>
-                          {petNames.get(appointment.petId) ?? 'Питомец'}
+                          {appointment.petId
+                            ? petNames.get(appointment.petId) ?? 'Питомец'
+                            : appointment.petName ?? 'Питомец'}
                         </p>
                         <p className='truncate text-xs opacity-70'>
-                          {clientNames.get(appointment.clientId) ?? 'Клиент'}
+                          {appointment.clientId
+                            ? clientNames.get(appointment.clientId) ?? 'Клиент'
+                            : appointment.clientName ?? 'Клиент'}
                         </p>
                       </button>
                     );
