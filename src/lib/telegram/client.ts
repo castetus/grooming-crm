@@ -1,14 +1,16 @@
 const TELEGRAM_API_URL = 'https://api.telegram.org';
 
-type SendMessageParams = {
+type SendTelegramMessageParams = {
   chatId: string | number;
   text: string;
+  parseMode?: 'HTML';
 };
 
 export async function sendTelegramMessage({
   chatId,
   text,
-}: SendMessageParams) {
+  parseMode,
+}: SendTelegramMessageParams) {
   const token = process.env.TELEGRAM_BOT_TOKEN;
 
   if (!token) {
@@ -25,6 +27,7 @@ export async function sendTelegramMessage({
       body: JSON.stringify({
         chat_id: chatId,
         text,
+        parse_mode: parseMode,
       }),
     },
   );

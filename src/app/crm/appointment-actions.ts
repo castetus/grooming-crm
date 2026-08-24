@@ -16,6 +16,7 @@ import {
 } from '@/services/appointments.service';
 import { revalidatePath } from 'next/cache';
 import type { PetSex, PetSpecies } from '@/types/entities';
+import { notifyGroomerAboutNewAppointment } from '@/lib/telegram/messages';
 
 interface AppointmentRequestData {
   clientName: string | null;
@@ -50,6 +51,12 @@ export async function getAppointmentFormOptions() {
 export async function createAppointmentAction(formData: FormData) {
   const input = getAppointmentInput(formData);
   const appointment = await createAppointment(input);
+
+  try {
+    await notifyGroomerAboutNewAppointment(appointment);
+  } catch (error) {
+    console.error('Telegram notification failed', error);
+  }
 
   revalidatePath('/crm');
 
