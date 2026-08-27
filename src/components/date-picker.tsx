@@ -64,20 +64,18 @@ export function DatePicker({
   }
 
   return (
-    <div className='grid grid-cols-[0.85fr_1.25fr_0.7fr] gap-2'>
+    <div className='grid grid-cols-[0.7fr_1.25fr_0.85fr] gap-2'>
       <DateSelect
         id={id}
-        aria-label={`${ariaLabel}: год`}
-        value={year}
-        onChange={(event) => updateYear(event.target.value)}
+        aria-label={`${ariaLabel}: день`}
+        value={day}
+        disabled={!year || !month}
+        onChange={(event) => updateDay(event.target.value)}
       >
-        <option value=''>Год</option>
-        {Array.from(
-          { length: 31 + futureYears },
-          (_, index) => currentYear + futureYears - index,
-        ).map((optionYear) => (
-          <option key={optionYear} value={optionYear}>
-            {optionYear}
+        <option value=''>День</option>
+        {Array.from({ length: daysInMonth }, (_, index) => index + 1).map((optionDay) => (
+          <option key={optionDay} value={optionDay}>
+            {optionDay}
           </option>
         ))}
       </DateSelect>
@@ -101,16 +99,18 @@ export function DatePicker({
       </DateSelect>
 
       <DateSelect
-        id={`${id}-day`}
-        aria-label={`${ariaLabel}: день`}
-        value={day}
-        disabled={!year || !month}
-        onChange={(event) => updateDay(event.target.value)}
+        id={`${id}-year`}
+        aria-label={`${ariaLabel}: год`}
+        value={year}
+        onChange={(event) => updateYear(event.target.value)}
       >
-        <option value=''>День</option>
-        {Array.from({ length: daysInMonth }, (_, index) => index + 1).map((optionDay) => (
-          <option key={optionDay} value={optionDay}>
-            {optionDay}
+        <option value=''>Год</option>
+        {Array.from(
+          { length: 31 + futureYears },
+          (_, index) => currentYear + futureYears - index,
+        ).map((optionYear) => (
+          <option key={optionYear} value={optionYear}>
+            {optionYear}
           </option>
         ))}
       </DateSelect>
