@@ -1,0 +1,25 @@
+import type { Appointment } from '@/types/entities';
+
+export const mockPendingAppointment: Appointment = {
+  id: 'mock-pending-appointment-2026-08-24',
+  temporary: true,
+  clientId: null,
+  petId: null,
+  clientName: 'Тестовый клиент',
+  phone: '+381 60 123 45 67',
+  telegramUsername: '@test_grooming_client',
+  petName: 'Боня',
+  species: 'dog',
+  breed: 'Померанский шпиц',
+  sex: 'female',
+  groomerId: null,
+  scheduledStart: '2026-08-24T10:00:00+02:00',
+  scheduledEnd: '2026-08-24T11:00:00+02:00',
+  locationType: 'salon',
+  address: null,
+  estimatedPrice: null,
+  status: 'pending',
+  notes: 'Тестовая запись из внешнего источника',
+  createdAt: '2026-08-24T09:00:00+02:00',
+  updatedAt: '2026-08-24T09:00:00+02:00',
+};

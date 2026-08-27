@@ -14,6 +14,14 @@ import type { ReactNode } from 'react';
 import { useEffect, useId, useState, useTransition } from 'react';
 
 import { Button, buttonVariants } from '@/components/ui/button';
+import {
+  Combobox,
+  ComboboxContent,
+  ComboboxEmpty,
+  ComboboxInput,
+  ComboboxItem,
+  ComboboxList,
+} from '@/components/ui/combobox';
 import { DatePicker } from '@/components/date-picker';
 import { TimePicker } from '@/components/time-picker';
 import { Input } from '@/components/ui/input';
@@ -101,6 +109,7 @@ export function EntityFormSheet({
   const [internalOpen, setInternalOpen] = useState(false);
   const [formType, setFormType] = useState<EntityFormType>(type);
   const [clientId, setClientId] = useState<string>();
+  const [appointmentPetId, setAppointmentPetId] = useState<string>();
   const [clients, setClients] = useState<ClientOption[]>();
   const [appointmentOptions, setAppointmentOptions] = useState<AppointmentFormOptions>();
   const isEditing = Boolean(
@@ -136,6 +145,7 @@ export function EntityFormSheet({
     if (!open) {
       setFormType(type);
       setClientId(undefined);
+      setAppointmentPetId(undefined);
       setClients(undefined);
       setAppointmentOptions(undefined);
     }
@@ -176,6 +186,7 @@ export function EntityFormSheet({
         <EntityForm
           type={formType}
           clientId={clientId}
+          appointmentPetId={appointmentPetId}
           clients={clients}
           groomingService={groomingService}
           client={client}
@@ -184,6 +195,8 @@ export function EntityFormSheet({
           appointment={appointment}
           appointmentOptions={appointmentOptions}
           onCreateClientRequested={() => setFormType('client')}
+          onAppointmentClientSelected={setClientId}
+          onAppointmentPetSelected={setAppointmentPetId}
           onCreatePetRequested={(selectedClientId) => {
             setClientId(selectedClientId || undefined);
             setFormType('pet');
@@ -191,10 +204,18 @@ export function EntityFormSheet({
           }}
           onClientCreated={(createdClientId) => {
             setClientId(createdClientId);
-            setFormType('pet');
-            void loadClients();
+            setFormType(type === 'appointment' ? 'appointment' : 'pet');
+
+            if (type === 'appointment') {
+              void getAppointmentFormOptions().then(setAppointmentOptions);
+            } else {
+              void loadClients();
+            }
           }}
           onPetCreated={() => handleOpenChange(false)}
+          onInlinePetCreated={() => {
+            void getAppointmentFormOptions().then(setAppointmentOptions);
+          }}
           onGroomingServiceCreated={() => handleOpenChange(false)}
           onAppointmentCreated={() => handleOpenChange(false)}
         />
@@ -206,6 +227,7 @@ export function EntityFormSheet({
 function EntityForm({
   type,
   clientId,
+  appointmentPetId,
   clients,
   groomingService,
   client,
@@ -214,14 +236,18 @@ function EntityForm({
   appointment,
   appointmentOptions,
   onCreateClientRequested,
+  onAppointmentClientSelected,
+  onAppointmentPetSelected,
   onCreatePetRequested,
   onClientCreated,
   onPetCreated,
+  onInlinePetCreated,
   onGroomingServiceCreated,
   onAppointmentCreated,
 }: {
   type: EntityFormType;
   clientId?: string;
+  appointmentPetId?: string;
   clients?: ClientOption[];
   groomingService?: GroomingService;
   client?: Client;
@@ -230,9 +256,12 @@ function EntityForm({
   appointment?: Appointment;
   appointmentOptions?: AppointmentFormOptions;
   onCreateClientRequested: () => void;
+  onAppointmentClientSelected: (clientId: string | undefined) => void;
+  onAppointmentPetSelected: (petId: string | undefined) => void;
   onCreatePetRequested: (clientId: string) => void;
   onClientCreated: (clientId: string) => void;
   onPetCreated: () => void;
+  onInlinePetCreated: () => void;
   onGroomingServiceCreated: () => void;
   onAppointmentCreated: () => void;
 }) {
@@ -302,6 +331,14 @@ function EntityForm({
     }
   }
 
+  async function handleInlineClientAction(formData: FormData) {
+    const result = await createClientAction(formData);
+
+    onClientCreated(result.clientId);
+
+    return result.clientId;
+  }
+
   return (
     <form
       className='flex min-h-0 flex-1 flex-col'
@@ -327,8 +364,13 @@ function EntityForm({
             appointmentDate={appointmentDate}
             appointment={appointment}
             options={appointmentOptions}
+            defaultClientId={clientId}
             onCreateClient={onCreateClientRequested}
+            onCreateInlineClient={handleInlineClientAction}
+            onClientSelected={onAppointmentClientSelected}
             onCreatePet={onCreatePetRequested}
+            onPetSelected={onAppointmentPetSelected}
+            onInlinePetCreated={onInlinePetCreated}
           />
         )}
       </div>
@@ -337,13 +379,13 @@ function EntityForm({
           appointment={appointment}
           onStatusChanged={onAppointmentCreated}
         />
-      ) : (
+      ) : type !== 'appointment' || (clientId && appointmentPetId) ? (
         <div className='border-t p-6'>
           <Button type='submit' className='w-full'>
             Сохранить
           </Button>
         </div>
-      )}
+      ) : null}
     </form>
   );
 }
@@ -638,40 +680,48 @@ function PetFields({
   clientId,
   clients,
   pet,
+  hideClientSelection = false,
 }: {
   formId: string;
   clientId?: string;
   clients?: ClientOption[];
   pet?: Pet;
+  hideClientSelection?: boolean;
 }) {
   const [isCreatingClient, setIsCreatingClient] = useState(false);
 
   return (
     <>
-      <FormField id={`${formId}-client`} label='Клиент' required={!isCreatingClient}>
-        <ClientSelect
-          key={`${clientId}-${clients?.length ?? 0}`}
-          id={`${formId}-client`}
-          clients={clients}
-          defaultClientId={clientId}
-          disabled={isCreatingClient || Boolean(pet)}
-        />
-        {!pet && (
-          <Button
-            type='button'
-            variant='outline'
-            className='mt-2 w-full'
-            onClick={() => setIsCreatingClient(!isCreatingClient)}
-          >
-            {isCreatingClient ? 'Выбрать существующего клиента' : 'Создать нового клиента'}
-          </Button>
-        )}
-      </FormField>
-      {isCreatingClient && (
-        <div className='space-y-5 rounded-xl border bg-muted/30 p-4'>
-          <p className='font-medium'>Новый клиент</p>
-          <ClientFields formId={`${formId}-new-client`} embedded />
-        </div>
+      {hideClientSelection ? (
+        <input type='hidden' name='clientId' value={clientId} />
+      ) : (
+        <>
+          <FormField id={`${formId}-client`} label='Клиент' required={!isCreatingClient}>
+            <ClientSelect
+              key={`${clientId}-${clients?.length ?? 0}`}
+              id={`${formId}-client`}
+              clients={clients}
+              defaultClientId={clientId}
+              disabled={isCreatingClient || Boolean(pet)}
+            />
+            {!pet && (
+              <Button
+                type='button'
+                variant='outline'
+                className='mt-2 w-full'
+                onClick={() => setIsCreatingClient(!isCreatingClient)}
+              >
+                {isCreatingClient ? 'Выбрать существующего клиента' : 'Создать нового клиента'}
+              </Button>
+            )}
+          </FormField>
+          {isCreatingClient && (
+            <div className='space-y-5 rounded-xl border bg-muted/30 p-4'>
+              <p className='font-medium'>Новый клиент</p>
+              <ClientFields formId={`${formId}-new-client`} embedded />
+            </div>
+          )}
+        </>
       )}
       <FormField id={`${formId}-name`} label='Кличка' required>
         <Input id={`${formId}-name`} name='name' defaultValue={pet?.name} required />
@@ -827,22 +877,97 @@ function GroomingServiceFields({
   );
 }
 
+type SearchableSelectOption = {
+  label: string;
+  value: string;
+};
+
+function SearchableSelect({
+  id,
+  name,
+  value,
+  options,
+  placeholder,
+  emptyMessage,
+  className,
+  disabled = false,
+  required = false,
+  onValueChange,
+}: {
+  id: string;
+  name: string;
+  value: string;
+  options: SearchableSelectOption[];
+  placeholder: string;
+  emptyMessage: string;
+  className?: string;
+  disabled?: boolean;
+  required?: boolean;
+  onValueChange: (value: string) => void;
+}) {
+  const selectedOption = options.find((option) => option.value === value) ?? null;
+
+  return (
+    <Combobox
+      items={options}
+      name={name}
+      value={selectedOption}
+      disabled={disabled}
+      required={required}
+      onValueChange={(option) => onValueChange(option?.value ?? '')}
+    >
+      <ComboboxInput
+        id={id}
+        className={cn('w-full', className)}
+        placeholder={placeholder}
+        disabled={disabled}
+        showClear
+      />
+      <ComboboxContent>
+        <ComboboxEmpty>{emptyMessage}</ComboboxEmpty>
+        <ComboboxList>
+          {(option: SearchableSelectOption) => (
+            <ComboboxItem key={option.value} value={option}>
+              {option.label}
+            </ComboboxItem>
+          )}
+        </ComboboxList>
+      </ComboboxContent>
+    </Combobox>
+  );
+}
+
 function AppointmentFields({
   formId,
   appointmentDate,
   options,
   appointment,
+  defaultClientId,
   onCreateClient,
+  onCreateInlineClient,
+  onClientSelected,
   onCreatePet,
+  onPetSelected,
+  onInlinePetCreated,
 }: {
   formId: string;
   appointmentDate?: string;
   options?: AppointmentFormOptions;
   appointment?: Appointment;
+  defaultClientId?: string;
   onCreateClient: () => void;
+  onCreateInlineClient: (formData: FormData) => Promise<string>;
+  onClientSelected: (clientId: string | undefined) => void;
   onCreatePet: (clientId: string) => void;
+  onPetSelected: (petId: string | undefined) => void;
+  onInlinePetCreated: () => void;
 }) {
-  const [selectedClientId, setSelectedClientId] = useState(appointment?.clientId ?? '');
+  const [selectedClientId, setSelectedClientId] = useState(
+    appointment?.clientId ?? defaultClientId ?? '',
+  );
+  const [isCreatingClient, setIsCreatingClient] = useState(false);
+  const [isCreatingPet, setIsCreatingPet] = useState(false);
+  const [clientCreatedInForm, setClientCreatedInForm] = useState(false);
   const [selectedPetId, setSelectedPetId] = useState(appointment?.petId ?? '');
   const [selectedServiceIds, setSelectedServiceIds] = useState<string[]>([]);
   const [manualPrice, setManualPrice] = useState(
@@ -873,37 +998,58 @@ function AppointmentFields({
     appointment?.status === 'pending' && (!appointment.clientId || !appointment.petId),
   );
 
+  async function handleInlineClientAction(formData: FormData) {
+    const createdClientId = await onCreateInlineClient(formData);
+
+    setSelectedClientId(createdClientId);
+    setIsCreatingClient(false);
+    setClientCreatedInForm(true);
+    onClientSelected(createdClientId);
+  }
+
+  async function handleInlinePetAction(formData: FormData) {
+    const result = await createPetAction(formData);
+
+    setSelectedPetId(result.petId);
+    setIsCreatingPet(false);
+    setClientCreatedInForm(false);
+    onPetSelected(result.petId);
+    onInlinePetCreated();
+  }
+
   return (
     <>
       {appointment && <AppointmentRequestData appointment={appointment} />}
       <FormField id={`${formId}-client`} label='Клиент' required={!isUnlinkedPending}>
         <div className='flex gap-2'>
-          <Select
+          <SearchableSelect
             id={`${formId}-client`}
             name='clientId'
             value={selectedClientId}
             className='min-w-0'
-            disabled={!options}
-            required={!isUnlinkedPending}
-            onChange={(event) => {
-              setSelectedClientId(event.target.value);
+            disabled={!options || isCreatingClient}
+            required={!isUnlinkedPending && !isCreatingClient}
+            options={options?.clients.map((clientOption) => ({
+              label: formatClientOption(clientOption),
+              value: clientOption.id,
+            })) ?? []}
+            placeholder={!options
+              ? 'Загрузка клиентов...'
+              : isUnlinkedPending
+                ? 'Создать из данных заявки'
+                : 'Выберите клиента'}
+            emptyMessage='Клиенты не найдены'
+            onValueChange={(value) => {
+              setSelectedClientId(value);
               setSelectedPetId('');
+              setIsCreatingClient(false);
+              setIsCreatingPet(false);
+              setClientCreatedInForm(false);
+              onClientSelected(value || undefined);
+              onPetSelected(undefined);
             }}
-          >
-            <option value=''>
-              {!options
-                ? 'Загрузка клиентов...'
-                : isUnlinkedPending
-                  ? 'Создать из данных заявки'
-                  : 'Выберите клиента'}
-            </option>
-            {options?.clients.map((clientOption) => (
-              <option key={clientOption.id} value={clientOption.id}>
-                {formatClientOption(clientOption)}
-              </option>
-            ))}
-          </Select>
-          {!isUnlinkedPending && (
+          />
+          {appointment && !isUnlinkedPending && (
             <Button
               type="button"
               variant="outline"
@@ -926,43 +1072,73 @@ function AppointmentFields({
             </Link>
           )}
         </div>
+        {!appointment && (
+          <Button
+            type='button'
+            variant='outline'
+            className='mt-2 w-full'
+            onClick={() => {
+              setIsCreatingClient(!isCreatingClient);
+
+              if (!isCreatingClient) {
+                setSelectedClientId('');
+                setSelectedPetId('');
+                onClientSelected(undefined);
+                onPetSelected(undefined);
+              }
+            }}
+          >
+            <HugeiconsIcon icon={Add01Icon} strokeWidth={2} />
+            {isCreatingClient ? 'Выбрать существующего клиента' : 'Создать клиента'}
+          </Button>
+        )}
       </FormField>
-      <FormField id={`${formId}-pet`} label='Питомец' required={!isUnlinkedPending}>
+      {!appointment && isCreatingClient && (
+        <div className='space-y-5 rounded-xl border bg-muted/30 p-4'>
+          <p className='font-medium'>Новый клиент</p>
+          <ClientFields formId={`${formId}-new-client`} />
+          <Button type='submit' className='w-full' formAction={handleInlineClientAction}>
+            Создать клиента
+          </Button>
+        </div>
+      )}
+      {(appointment || selectedClientId) && !isCreatingClient && (
+        <>
+      {!clientCreatedInForm && !isCreatingPet && (
+        <FormField id={`${formId}-pet`} label='Питомец' required={!isUnlinkedPending}>
         <div className='flex gap-2'>
-          <Select
+          <SearchableSelect
             id={`${formId}-pet`}
             name='petId'
             value={selectedPetId}
             className='min-w-0'
             disabled={!options}
             required={!isUnlinkedPending}
-            onChange={(event) => {
-              const petId = event.target.value;
+            options={availablePets.map((petOption) => ({
+              label: petOption.breed ? `${petOption.name} — ${petOption.breed}` : petOption.name,
+              value: petOption.id,
+            }))}
+            placeholder={!options
+              ? 'Загрузка питомцев...'
+              : isUnlinkedPending
+                ? 'Создать из данных заявки'
+                : availablePets.length
+                  ? 'Выберите питомца'
+                  : 'У клиента нет питомцев'}
+            emptyMessage='Питомцы не найдены'
+            onValueChange={(petId) => {
               const pet = options?.pets.find((petOption) => petOption.id === petId);
 
               setSelectedPetId(petId);
+              onPetSelected(petId || undefined);
 
               if (pet) {
                 setSelectedClientId(pet.clientId);
+                onClientSelected(pet.clientId);
               }
             }}
-          >
-            <option value=''>
-              {!options
-                ? 'Загрузка питомцев...'
-                : isUnlinkedPending
-                  ? 'Создать из данных заявки'
-                  : availablePets.length
-                  ? 'Выберите питомца'
-                  : 'У клиента нет питомцев'}
-            </option>
-            {availablePets.map((petOption) => (
-              <option key={petOption.id} value={petOption.id}>
-                {petOption.breed ? `${petOption.name} — ${petOption.breed}` : petOption.name}
-              </option>
-            ))}
-          </Select>
-          {!isUnlinkedPending && (
+          />
+          {appointment && !isUnlinkedPending && (
             <Button
               type="button"
               variant="outline"
@@ -986,6 +1162,53 @@ function AppointmentFields({
           )}
         </div>
       </FormField>
+      )}
+      {!appointment && !isCreatingPet && (
+        <Button
+          type='button'
+          variant='outline'
+          className='w-full'
+          onClick={() => {
+            setSelectedPetId('');
+            setIsCreatingPet(true);
+            onPetSelected(undefined);
+          }}
+        >
+          <HugeiconsIcon icon={Add01Icon} strokeWidth={2} />
+          Создать питомца
+        </Button>
+      )}
+      {!appointment && isCreatingPet && (
+        <div className='space-y-5 rounded-xl border bg-muted/30 p-4'>
+          <p className='font-medium'>Новый питомец</p>
+          <PetFields
+            formId={`${formId}-new-pet`}
+            clientId={selectedClientId}
+            hideClientSelection
+          />
+          <div className='flex gap-2'>
+            {!clientCreatedInForm && (
+              <Button
+                type='button'
+                variant='outline'
+                className='flex-1'
+                onClick={() => setIsCreatingPet(false)}
+              >
+                Выбрать существующего питомца
+              </Button>
+            )}
+            <Button
+              type='submit'
+              className='flex-1'
+              formAction={handleInlinePetAction}
+            >
+              Создать питомца
+            </Button>
+          </div>
+        </div>
+      )}
+      {(appointment || selectedPetId) && !isCreatingPet && (
+        <>
       <FormField id={`${formId}-date`} label='Дата' required>
         <DatePicker
           key={appointmentDate}
@@ -1165,6 +1388,10 @@ function AppointmentFields({
       <FormField id={`${formId}-notes`} label='Заметки'>
         <Textarea id={`${formId}-notes`} name='notes' defaultValue={appointment?.notes ?? ''} />
       </FormField>
+        </>
+      )}
+        </>
+      )}
     </>
   );
 }
