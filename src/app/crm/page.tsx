@@ -12,8 +12,8 @@ export default async function CalendarPage() {
   ]);
 
   return (
-    <div className='-mx-4 space-y-6 sm:mx-0'>
-      <div className='px-4 sm:px-0'>
+    <div className='-mx-4 flex h-[calc(100dvh-1rem)] flex-col gap-6 overflow-hidden sm:mx-0 lg:h-[calc(100dvh-5rem)]'>
+      <div className='shrink-0 px-4 sm:px-0'>
         <PageHeader
           title='Календарь записей'
           actionLabel='Добавить запись'

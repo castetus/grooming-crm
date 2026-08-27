@@ -45,8 +45,8 @@ export function WeekCalendar({
   const timelineWidth = (endHour - startHour) * hourWidth;
 
   return (
-    <section className='overflow-hidden rounded-2xl border bg-card'>
-      <div className='flex items-center justify-between gap-3 border-b px-4 py-3 sm:px-5'>
+    <section className='flex min-h-0 flex-1 flex-col overflow-hidden rounded-2xl border bg-card'>
+      <div className='flex shrink-0 items-center justify-between gap-3 border-b px-4 py-3 sm:px-5'>
         <Button
           type='button'
           variant='ghost'
@@ -71,10 +71,10 @@ export function WeekCalendar({
         </Button>
       </div>
 
-      <div className='overflow-x-auto'>
+      <div className='min-h-0 flex-1 overflow-auto'>
         <div className='min-w-max'>
-          <div className='flex h-12 items-end border-b text-xs text-muted-foreground'>
-            <div className='sticky left-0 z-20 w-24 shrink-0 border-r bg-card px-4 sm:w-32' />
+          <div className='sticky top-0 z-30 flex h-12 items-end border-b bg-card text-xs text-muted-foreground'>
+            <div className='sticky left-0 z-40 w-24 shrink-0 border-r bg-card px-4 sm:w-32' />
             <div className='relative h-full' style={{ width: timelineWidth }}>
               {hours.map((hour) => (
                 <span
