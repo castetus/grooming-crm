@@ -130,9 +130,7 @@ export function AppointmentFields({
             })) ?? []}
             placeholder={!options
               ? 'Загрузка клиентов...'
-              : isUnlinkedPending
-                ? 'Создать из данных заявки'
-                : 'Выберите клиента'}
+              : 'Выберите клиента'}
             emptyMessage='Клиенты не найдены'
             onValueChange={(value) => {
               setSelectedClientId(value);
@@ -215,11 +213,11 @@ export function AppointmentFields({
             }))}
             placeholder={!options
               ? 'Загрузка питомцев...'
-              : isUnlinkedPending
-                ? 'Создать из данных заявки'
-                : availablePets.length
-                  ? 'Выберите питомца'
-                  : 'У клиента нет питомцев'}
+              : availablePets.length
+                ? 'Выберите питомца'
+                : selectedClientId
+                  ? 'У клиента нет питомцев'
+                  : 'Выберите питомца'}
             emptyMessage='Питомцы не найдены'
             onValueChange={(petId) => {
               const pet = options?.pets.find((petOption) => petOption.id === petId);
@@ -257,6 +255,11 @@ export function AppointmentFields({
           )}
         </div>
       </FormField>
+      )}
+      {isUnlinkedPending && (!selectedClientId || !selectedPetId) && !isCreatingPet && (
+        <Button type='submit' variant='outline' size='lg' className='w-full'>
+          Создать из данных заявки
+        </Button>
       )}
       {!appointment && !isCreatingPet && !petCreatedInForm && (
         <Button
