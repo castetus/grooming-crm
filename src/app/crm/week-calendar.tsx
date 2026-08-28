@@ -45,7 +45,7 @@ export function WeekCalendar({
   const timelineWidth = (endHour - startHour) * hourWidth;
 
   return (
-    <section className='flex min-h-0 flex-1 flex-col overflow-hidden rounded-2xl border bg-card'>
+    <section className='isolate flex min-h-0 flex-1 flex-col overflow-hidden rounded-2xl border bg-card'>
       <div className='flex shrink-0 items-center justify-between gap-3 border-b px-4 py-3 sm:px-5'>
         <Button
           type='button'
