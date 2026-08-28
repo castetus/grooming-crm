@@ -9,13 +9,19 @@ export async function sendGroomerMessage(
   text: string,
   options: SendGroomerMessageOptions = {},
 ) {
-  const chatId = process.env.TELEGRAM_LANA_CHAT_ID;
 
+  const token = process.env.TELEGRAM_BOT_TOKEN;
+  if (!token) {
+    throw new Error('TOKEN is not configured');
+  }
+
+  const chatId = process.env.TELEGRAM_LANA_CHAT_ID;
   if (!chatId) {
     throw new Error('TELEGRAM_LANA_CHAT_ID is not configured');
   }
 
   return sendTelegramMessage({
+    token,
     chatId,
     text,
     parseMode: options.parseMode,

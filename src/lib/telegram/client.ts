@@ -1,17 +1,18 @@
 const TELEGRAM_API_URL = 'https://api.telegram.org';
 
 type SendTelegramMessageParams = {
+  token: string;
   chatId: string | number;
   text: string;
   parseMode?: 'HTML';
 };
 
 export async function sendTelegramMessage({
+  token,
   chatId,
   text,
   parseMode,
 }: SendTelegramMessageParams) {
-  const token = process.env.TELEGRAM_BOT_TOKEN;
 
   if (!token) {
     throw new Error('TELEGRAM_BOT_TOKEN is not configured');
