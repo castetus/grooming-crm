@@ -1,8 +1,8 @@
-import { createClient } from '@/lib/supabase/server';
+import { createAdminClient } from '@/lib/supabase/admin';
 import { BookingSession, BookingSessionData, BookingStep } from './types';
 
 export async function getBookingSession(telegramUserId: number) {
-  const supabase = await createClient();
+  const supabase = await createAdminClient();
 
   const { data, error } = await supabase
     .from('telegram_booking_sessions')
@@ -28,7 +28,7 @@ export async function createBookingSession({
   step: BookingStep;
   data?: BookingSessionData;
 }) {
-  const supabase = await createClient();
+  const supabase = await createAdminClient();
 
   const { error } = await supabase
     .from('telegram_booking_sessions')
@@ -55,7 +55,7 @@ export async function updateBookingSession(
     data?: BookingSessionData;
   },
 ) {
-  const supabase = await createClient();
+  const supabase = await createAdminClient();
 
   const update: Record<string, unknown> = {
     updated_at: new Date().toISOString(),
@@ -80,7 +80,7 @@ export async function updateBookingSession(
 }
 
 export async function deleteBookingSession(telegramUserId: number) {
-  const supabase = await createClient();
+  const supabase = await createAdminClient();
 
   const { error } = await supabase
     .from('telegram_booking_sessions')
