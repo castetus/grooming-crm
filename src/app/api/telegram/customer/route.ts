@@ -1,23 +1,10 @@
-import { sendTelegramMessage } from '@/lib/telegram/client';
+import { handleCustomerTelegramUpdate } from '@/lib/telegram/customer/handle-update';
+import type { TelegramUpdate } from '@/lib/telegram/customer/types';
 
 export async function POST(request: Request) {
-  const update = await request.json();
+  const update = (await request.json()) as TelegramUpdate;
 
-  const message = update.message;
-
-  if (message?.text === '/start') {
-    const token = process.env.CUSTOMER_BOT_TOKEN;
-
-    if (!token) {
-      throw new Error('TELEGRAM_CUSTOMER_BOT_TOKEN is not configured');
-    }
-
-    await sendTelegramMessage({
-      token,
-      chatId: message.chat.id,
-      text: 'Привет! Здесь можно записаться на груминг 🐾',
-    });
-  }
+  await handleCustomerTelegramUpdate(update);
 
   return Response.json({ ok: true });
 }
