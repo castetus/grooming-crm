@@ -11,6 +11,11 @@ export async function startBooking(message: TelegramMessage) {
     return;
   }
 
+  console.log('START BOOKING', {
+    userId: message.from?.id,
+    chatId: message.chat.id,
+  });
+
   const telegramUserId = message.from.id;
   const chatId = message.chat.id;
 
@@ -22,6 +27,8 @@ export async function startBooking(message: TelegramMessage) {
     chatId,
     step: 'CLIENT_NAME',
   });
+
+  console.log('SEND CUSTOMER MESSAGE', chatId);
 
   await sendCustomerMessage(
     chatId,
