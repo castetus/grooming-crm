@@ -1,10 +1,10 @@
 import { sendTelegramMessage } from '../client';
 
 function getToken() {
-  const token = process.env.TELEGRAM_CUSTOMER_BOT_TOKEN;
+  const token = process.env.CUSTOMER_BOT_TOKEN;
 
   if (!token) {
-    throw new Error('TELEGRAM_CUSTOMER_BOT_TOKEN is not configured');
+    throw new Error('CUSTOMER_BOT_TOKEN is not configured');
   }
 
   return token;
