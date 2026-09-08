@@ -1,38 +1,58 @@
-import type { TelegramMessage } from './types';
+import type {
+  TelegramCallbackQuery,
+  TelegramMessage,
+  StartBookingParams,
+} from './types';
+
+import {
+  BOT_MESSAGES,
+  sendCustomerMessage,
+} from './messages';
+
 import {
   createBookingSession,
   getBookingSession,
   updateBookingSession,
 } from './session';
-import { sendCustomerMessage } from './messages';
 
-export async function startBooking(message: TelegramMessage) {
-  if (!message.from) {
-    return;
-  }
-
-  console.log('START BOOKING', {
-    userId: message.from?.id,
-    chatId: message.chat.id,
-  });
-
-  const telegramUserId = message.from.id;
-  const chatId = message.chat.id;
-
-  // Позже здесь сначала проверим Client по telegramUserId.
-  // Пока запускаем полный flow нового клиента.
-
+export async function startBooking({
+  telegramUserId,
+  chatId,
+  firstName,
+}: StartBookingParams) {
   await createBookingSession({
     telegramUserId,
     chatId,
-    step: 'CLIENT_NAME',
+    step: 'PHONE',
+    data: {
+      clientName: firstName,
+    },
   });
 
-  console.log('SEND CUSTOMER MESSAGE', chatId);
+    await sendCustomerMessage(
+    chatId,
+    BOT_MESSAGES.confirmClientName(firstName),
+    {
+      inline_keyboard: [
+        [
+          {
+            text: 'Да, всё верно',
+            callback_data: 'client_name:confirm',
+          },
+        ],
+        [
+          {
+            text: 'Ввести другое имя',
+            callback_data: 'client_name:change',
+          },
+        ],
+      ],
+    },
+  );
 
   await sendCustomerMessage(
     chatId,
-    'Как вас зовут?',
+    BOT_MESSAGES.askPhone,
   );
 }
 
@@ -44,89 +64,232 @@ export async function handleBookingMessage(
   }
 
   const telegramUserId = message.from.id;
+  const chatId = message.chat.id;
+  const value = message.text.trim();
 
   const session = await getBookingSession(telegramUserId);
 
   if (!session) {
     await sendCustomerMessage(
-      message.chat.id,
-      'Чтобы начать запись, отправьте /start',
+      chatId,
+      BOT_MESSAGES.startFirst,
     );
 
     return;
   }
 
   switch (session.step) {
-    case 'CLIENT_NAME': {
-      const clientName = message.text.trim();
-
-      if (!clientName) {
-        await sendCustomerMessage(
-          message.chat.id,
-          'Введите имя.',
-        );
-
-        return;
-      }
-
-      await updateBookingSession(telegramUserId, {
-        step: 'PHONE',
-        data: {
-          ...session.data,
-          clientName,
-        },
-      });
-
-      await sendCustomerMessage(
-        message.chat.id,
-        'Теперь отправьте номер телефона.',
-      );
-
-      return;
-    }
 
     case 'PHONE': {
-      const phone = message.text.trim();
-
       await updateBookingSession(telegramUserId, {
         step: 'PET_NAME',
         data: {
           ...session.data,
-          phone,
+          phone: value,
         },
       });
 
       await sendCustomerMessage(
-        message.chat.id,
-        'Как зовут питомца?',
+        chatId,
+        BOT_MESSAGES.askPetName,
       );
 
       return;
     }
 
     case 'PET_NAME': {
-      const petName = message.text.trim();
-
       await updateBookingSession(telegramUserId, {
         step: 'SPECIES',
         data: {
           ...session.data,
-          petName,
+          petName: value,
         },
       });
 
       await sendCustomerMessage(
-        message.chat.id,
-        'Питомец — собака или кошка?',
+        chatId,
+        BOT_MESSAGES.askSpecies,
+        {
+          inline_keyboard: [
+            [
+              {
+                text: '🐶 Собака',
+                callback_data: 'species:dog',
+              },
+              {
+                text: '🐱 Кошка',
+                callback_data: 'species:cat',
+              },
+            ],
+          ],
+        },
+      );
+
+      return;
+    }
+
+    case 'BREED': {
+      await updateBookingSession(telegramUserId, {
+        step: 'SEX',
+        data: {
+          ...session.data,
+          breed: value,
+        },
+      });
+
+      await sendCustomerMessage(
+        chatId,
+        BOT_MESSAGES.askSex,
+        {
+          inline_keyboard: [
+            [
+              {
+                text: '♂ Самец',
+                callback_data: 'sex:male',
+              },
+              {
+                text: '♀ Самка',
+                callback_data: 'sex:female',
+              },
+            ],
+          ],
+        },
+      );
+
+      return;
+    }
+
+    case 'NOTES': {
+      const notes = value === '-' ? undefined : value;
+
+      await updateBookingSession(telegramUserId, {
+        step: 'CONFIRM',
+        data: {
+          ...session.data,
+          notes,
+        },
+      });
+
+      await sendCustomerMessage(
+        chatId,
+        BOT_MESSAGES.confirm,
       );
 
       return;
     }
 
     default:
-      await sendCustomerMessage(
-        message.chat.id,
-        `Текущий шаг: ${session.step}`,
-      );
+      return;
+  }
+}
+
+export async function handleBookingCallback(
+  callback: TelegramCallbackQuery,
+) {
+  const telegramUserId = callback.from.id;
+  const chatId = callback.message?.chat.id;
+  const data = callback.data;
+
+  if (!chatId || !data) {
+    return;
+  }
+
+  if (data === 'booking:start' && callback.message) {
+    await startBooking({
+      telegramUserId: callback.from.id,
+      chatId,
+      firstName: callback.from.first_name,
+    });
+
+    return;
+  }
+
+  const session = await getBookingSession(telegramUserId);
+
+  if (!session) {
+    await sendCustomerMessage(
+      chatId,
+      BOT_MESSAGES.startFirst,
+    );
+
+    return;
+  }
+
+  if (
+    session.step === 'SPECIES' &&
+    data.startsWith('species:')
+  ) {
+    const species = data.split(':')[1];
+
+    await updateBookingSession(telegramUserId, {
+      step: 'BREED',
+      data: {
+        ...session.data,
+        species,
+      },
+    });
+
+    await sendCustomerMessage(
+      chatId,
+      BOT_MESSAGES.askBreed,
+    );
+
+    return;
+  }
+
+  if (
+    session.step === 'SEX' &&
+    data.startsWith('sex:')
+  ) {
+    const sex = data.split(':')[1];
+
+    await updateBookingSession(telegramUserId, {
+      step: 'LOCATION_TYPE',
+      data: {
+        ...session.data,
+        sex,
+      },
+    });
+
+    await sendCustomerMessage(
+      chatId,
+      BOT_MESSAGES.askLocationType,
+      {
+        inline_keyboard: [
+          [
+            {
+              text: 'Салон',
+              callback_data: 'location:salon',
+            },
+            {
+              text: 'На дому',
+              callback_data: 'location:home',
+            },
+          ],
+        ],
+      },
+    );
+
+    return;
+  }
+
+  if (
+    session.step === 'LOCATION_TYPE' &&
+    data.startsWith('location:')
+  ) {
+    const locationType = data.split(':')[1];
+
+    await updateBookingSession(telegramUserId, {
+      step: 'DATE',
+      data: {
+        ...session.data,
+        locationType,
+      },
+    });
+
+    await sendCustomerMessage(
+      chatId,
+      BOT_MESSAGES.askDate,
+    );
   }
 }

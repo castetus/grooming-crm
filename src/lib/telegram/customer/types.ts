@@ -1,5 +1,4 @@
 export type BookingStep =
-  | 'CLIENT_NAME'
   | 'PHONE'
   | 'PET_NAME'
   | 'SPECIES'
@@ -10,6 +9,12 @@ export type BookingStep =
   | 'TIME'
   | 'NOTES'
   | 'CONFIRM';
+
+export type StartBookingParams = {
+  telegramUserId: number;
+  chatId: number;
+  firstName: string;
+};
 
 export type BookingSessionData = {
   clientName?: string;
@@ -54,9 +59,13 @@ export type TelegramMessage = {
 
 export type TelegramCallbackQuery = {
   id: string;
+
   from: {
     id: number;
+    first_name: string;
+    username?: string;
   };
+
   data?: string;
   message?: TelegramMessage;
 };

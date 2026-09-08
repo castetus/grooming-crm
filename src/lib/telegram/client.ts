@@ -5,6 +5,7 @@ type SendTelegramMessageParams = {
   chatId: string | number;
   text: string;
   parseMode?: 'HTML';
+  replyMarkup?: object;
 };
 
 export async function sendTelegramMessage({
@@ -12,14 +13,10 @@ export async function sendTelegramMessage({
   chatId,
   text,
   parseMode,
+  replyMarkup,
 }: SendTelegramMessageParams) {
-
-  if (!token) {
-    throw new Error('TELEGRAM_BOT_TOKEN is not configured');
-  }
-
   const response = await fetch(
-    `${TELEGRAM_API_URL}/bot${token}/sendMessage`,
+    `https://api.telegram.org/bot${token}/sendMessage`,
     {
       method: 'POST',
       headers: {
@@ -29,13 +26,13 @@ export async function sendTelegramMessage({
         chat_id: chatId,
         text,
         parse_mode: parseMode,
+        reply_markup: replyMarkup,
       }),
     },
   );
 
   if (!response.ok) {
     const error = await response.text();
-
     throw new Error(`Telegram API error: ${error}`);
   }
 
