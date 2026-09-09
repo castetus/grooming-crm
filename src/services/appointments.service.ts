@@ -1,8 +1,10 @@
 import { createClient } from '@/lib/supabase/server';
+import { createAdminClient } from '@/lib/supabase/admin';
 import type {
   Appointment,
   AppointmentStatus,
   CompleteAppointmentInput,
+  CreatePendingAppointmentInput,
   LocationType,
 } from '@/types/entities';
 import { mapAppointment } from './mappers';
@@ -24,6 +26,41 @@ export interface CreateAppointmentInput {
 }
 
 export type UpdateAppointmentInput = Partial<CreateAppointmentInput>;
+
+export async function createPendingAppointment(
+  input: CreatePendingAppointmentInput,
+): Promise<Appointment> {
+  const supabase = createAdminClient();
+
+  const { data, error } = await supabase
+    .from('appointments')
+    .insert({
+      client_id: input.clientId ?? null,
+      pet_id: input.petId ?? null,
+      client_name: input.clientName ?? null,
+      phone: input.phone ?? null,
+      telegram_username: input.telegramUsername ?? null,
+      telegram_user_id: input.telegramUserId ?? null,
+      pet_name: input.petName ?? null,
+      species: input.species ?? null,
+      breed: input.breed ?? null,
+      sex: input.sex ?? null,
+      groomer_id: input.groomerId ?? null,
+      scheduled_start: input.scheduledStart,
+      scheduled_end: input.scheduledEnd,
+      location_type: input.locationType,
+      address: input.address ?? null,
+      estimated_price: input.estimatedPrice ?? null,
+      status: 'pending',
+      notes: input.notes ?? null,
+    })
+    .select()
+    .single();
+
+  if (error) throw error;
+
+  return mapAppointment(data);
+}
 
 export async function getAppointments(): Promise<Appointment[]> {
   const supabase = await createClient();

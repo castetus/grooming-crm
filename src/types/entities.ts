@@ -66,6 +66,7 @@ export interface Appointment {
   telegramUsername: string | null;
 
   petName: string | null;
+  telegramUserId?: number | null;
   species: PetSpecies | null;
   breed: string | null;
   sex: PetSex | null;
@@ -131,6 +132,25 @@ export interface CreateAppointmentInput {
   status?: AppointmentStatus;
   notes?: string | null;
 }
+
+export type CreatePendingAppointmentInput = Omit<
+  CreateAppointmentInput,
+  'clientId' | 'petId' | 'status'
+> & Partial<Pick<
+  Appointment,
+  | 'clientId'
+  | 'petId'
+  | 'clientName'
+  | 'phone'
+  | 'telegramUsername'
+  | 'telegramUserId'
+  | 'petName'
+  | 'species'
+  | 'breed'
+  | 'sex'
+>> & {
+  status?: 'pending';
+};
 
 export type UpdateAppointmentInput = Partial<
   Omit<CreateAppointmentInput, "status">

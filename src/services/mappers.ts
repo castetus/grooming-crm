@@ -63,6 +63,7 @@ export function mapAppointment(row: any): Appointment {
     petId: row.pet_id,
 
     clientName: row.client_name,
+    telegramUserId: row.telegram_user_id,
     phone: row.phone,
     telegramUsername: row.telegram_username,
 

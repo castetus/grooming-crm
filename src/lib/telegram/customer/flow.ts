@@ -12,12 +12,15 @@ import {
 
 import {
   createBookingSession,
+  deleteBookingSession,
   getBookingSession,
   updateBookingSession,
 } from './session';
+import { confirmBooking } from './confirm-booking';
 
 export async function startBooking({
   telegramUserId,
+  telegramUsername,
   chatId,
   firstName,
 }: StartBookingParams) {
@@ -27,6 +30,7 @@ export async function startBooking({
     step: 'CLIENT_NAME_CONFIRM',
     data: {
       clientName: firstName,
+      telegramUsername,
     },
   });
 
@@ -65,6 +69,18 @@ export async function handleBookingMessage(
   const value = message.text.trim();
 
   const session = await getBookingSession(telegramUserId);
+
+  if (session) {
+    const updatedAt = new Date(session.updated_at).getTime();
+    const now = Date.now();
+
+    const isExpired =
+      now - updatedAt > 24 * 60 * 60 * 1000;
+
+    if (isExpired) {
+      await deleteBookingSession(telegramUserId);
+    }
+  }
 
   if (!session) {
     await sendCustomerMessage(
@@ -172,6 +188,23 @@ export async function handleBookingMessage(
       return;
     }
 
+    case 'DATE': {
+      await updateBookingSession(telegramUserId, {
+        step: 'NOTES',
+        data: {
+          ...session.data,
+          requestedDateTime: value,
+        },
+      });
+
+      await sendCustomerMessage(
+        chatId,
+        BOT_MESSAGES.askNotes,
+      );
+
+      return;
+    }
+
     case 'NOTES': {
       const notes = value === '-' ? undefined : value;
 
@@ -226,6 +259,7 @@ export async function handleBookingCallback(
   if (data === 'booking:start' && callback.message) {
     await startBooking({
       telegramUserId: callback.from.id,
+      telegramUsername: callback.from.username ?? null,
       chatId,
       firstName: callback.from.first_name,
     });
@@ -297,7 +331,7 @@ export async function handleBookingCallback(
     const sex = data.split(':')[1];
 
     await updateBookingSession(telegramUserId, {
-      step: 'NOTES',
+      step: 'DATE',
       data: {
         ...session.data,
         sex,
@@ -306,10 +340,25 @@ export async function handleBookingCallback(
 
     await sendCustomerMessage(
       chatId,
-      BOT_MESSAGES.askNotes,
+      BOT_MESSAGES.askDate,
     );
 
     return;
   }
 
+  if (
+  session.step === 'CONFIRM' &&
+  data === 'booking:confirm'
+    ) {
+      await confirmBooking(session);
+
+      await deleteBookingSession(telegramUserId);
+
+      await sendCustomerMessage(
+        chatId,
+        BOT_MESSAGES.bookingCreated,
+      );
+
+      return;
+    }
 }

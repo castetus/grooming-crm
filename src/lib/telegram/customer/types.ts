@@ -14,11 +14,13 @@ export type BookingStep =
 
 export type StartBookingParams = {
   telegramUserId: number;
+  telegramUsername: string | null;
   chatId: number;
   firstName: string;
 };
 
 export type BookingSessionData = {
+  telegramUsername?: string | null;
   clientName?: string;
   phone?: string;
   petName?: string;
