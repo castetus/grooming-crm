@@ -8,7 +8,7 @@ import {
 } from '@hugeicons/core-free-icons';
 import { HugeiconsIcon } from '@hugeicons/react';
 import Link from 'next/link';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 import { DatePicker } from '@/components/date-picker';
 import { TimePicker } from '@/components/time-picker';
@@ -20,6 +20,7 @@ import { getAppointmentFormOptions } from '../appointment-actions';
 import { createPetAction } from '../pets/actions';
 import { AppointmentRequestData } from './appointment-request-data';
 import { AppointmentDatePicker } from './appointment-date-picker';
+import { InlineEntityForm } from './inline-entity-form';
 import { formatClientOption } from './entity-fields';
 import { FormField, SearchableSelect, Select, Textarea } from './form-controls';
 import {
@@ -37,12 +38,11 @@ export function AppointmentFields({
   appointment,
   defaultClientId,
   defaultPetId,
-  onCreateClient,
   onCreateInlineClient,
   onClientSelected,
-  onCreatePet,
   onPetSelected,
   onInlinePetCreated,
+  onInlineFormChange,
 }: {
   formId: string;
   appointmentDate?: string;
@@ -50,16 +50,19 @@ export function AppointmentFields({
   appointment?: Appointment;
   defaultClientId?: string;
   defaultPetId?: string;
-  onCreateClient: () => void;
   onCreateInlineClient: (formData: FormData) => Promise<string>;
   onClientSelected: (clientId: string | undefined) => void;
-  onCreatePet: (clientId: string) => void;
   onPetSelected: (petId: string | undefined) => void;
   onInlinePetCreated: () => void;
+  onInlineFormChange: (open: boolean) => void;
 }) {
   const [selectedClientId, setSelectedClientId] = useState(
     defaultClientId ?? appointment?.clientId ?? '',
   );
+  const [inlineForm, setInlineForm] = useState<'client' | 'pet'>();
+  const appointmentDetailsRef = useRef<HTMLDivElement>(null);
+  const petSectionRef = useRef<HTMLDivElement>(null);
+  const scrollAfterSave = useRef(false);
   const [creatingFromRequest, setCreatingFromRequest] = useState(false);
   const [requestCreationError, setRequestCreationError] = useState('');
   const [createdClientId, setCreatedClientId] = useState<string>();
@@ -95,10 +98,32 @@ export function AppointmentFields({
   );
   const clientCreatedInForm = createdClientId === selectedClientId;
 
+  useEffect(() => {
+    if (!scrollAfterSave.current || inlineForm) return;
+
+    const frame = requestAnimationFrame(() => {
+      const section = appointmentDetailsRef.current ?? petSectionRef.current;
+      section?.scrollIntoView({ block: 'start', behavior: 'instant' });
+      scrollAfterSave.current = false;
+    });
+
+    return () => cancelAnimationFrame(frame);
+  }, [inlineForm, selectedPetId, createdClientId]);
+
+  function toggleInlineForm(type?: 'client' | 'pet') {
+    const next = inlineForm === type ? undefined : type;
+    setInlineForm(next);
+    onInlineFormChange(Boolean(next));
+  }
+
   async function handleInlineClientAction(formData: FormData) {
     const createdClientId = await onCreateInlineClient(formData);
 
+    scrollAfterSave.current = true;
     setSelectedClientId(createdClientId);
+    setSelectedPetId('');
+    onPetSelected(undefined);
+    toggleInlineForm();
     setCreatedClientId(createdClientId);
     setPetCreatedInForm(false);
     onClientSelected(createdClientId);
@@ -107,7 +132,9 @@ export function AppointmentFields({
   async function handleInlinePetAction(formData: FormData) {
     const result = await createPetAction(formData);
 
+    scrollAfterSave.current = true;
     setSelectedPetId(result.petId);
+    toggleInlineForm();
     setPetCreatedInForm(true);
     onPetSelected(result.petId);
     onInlinePetCreated();
@@ -155,7 +182,7 @@ export function AppointmentFields({
             name='clientId'
             value={selectedClientId}
             className='min-w-0'
-            disabled={!options}
+            disabled={!options || Boolean(inlineForm)}
             required
             options={options?.clients.map((clientOption) => ({
               label: formatClientOption(clientOption),
@@ -180,7 +207,8 @@ export function AppointmentFields({
               size="icon"
               aria-label="Добавить клиента"
               title="Добавить клиента"
-              onClick={onCreateClient}
+              onClick={() => toggleInlineForm('client')}
+              disabled={Boolean(inlineForm)}
             >
               <HugeiconsIcon icon={Add01Icon} strokeWidth={2} />
             </Button>
@@ -201,20 +229,30 @@ export function AppointmentFields({
             type="button"
             variant="outline"
             className="w-full"
-            disabled={creatingFromRequest || !appointment?.clientName}
+            disabled={Boolean(inlineForm) || creatingFromRequest || !appointment?.clientName}
             onClick={() => createFromRequest('client')}
           >
             Создать клиента из данных заявки
           </Button>
         )}
         {!appointment && (
-          <Button type="button" variant="outline" className="mt-2 w-full" onClick={onCreateClient}>
+          <Button type="button" variant="outline" className="mt-2 w-full" onClick={() => toggleInlineForm('client')}
+              disabled={Boolean(inlineForm)}>
             Создать клиента
           </Button>
         )}
       </FormField>
+      {inlineForm === 'client' && (
+        <InlineEntityForm
+          type="client"
+          formId={`${formId}-new-client`}
+          onSave={handleInlineClientAction}
+          onCancel={() => toggleInlineForm()}
+        />
+      )}
       {(appointment || selectedClientId) && (
         <>
+        <div ref={petSectionRef} className="scroll-mt-16 lg:scroll-mt-0">
         <FormField id={`${formId}-pet`} label='Питомец' required>
         <div className='flex gap-2'>
           <SearchableSelect
@@ -222,7 +260,7 @@ export function AppointmentFields({
             name='petId'
             value={selectedPetId}
             className='min-w-0'
-            disabled={!options}
+            disabled={!options || Boolean(inlineForm)}
             required
             options={availablePets.map((petOption) => ({
               label: petOption.breed ? `${petOption.name} — ${petOption.breed}` : petOption.name,
@@ -255,7 +293,8 @@ export function AppointmentFields({
               size="icon"
               aria-label="Добавить питомца"
               title="Добавить питомца"
-              onClick={() => onCreatePet(selectedClientId)}
+              onClick={() => toggleInlineForm('pet')}
+              disabled={Boolean(inlineForm) || !selectedClientId}
             >
               <HugeiconsIcon icon={Add01Icon} strokeWidth={2} />
             </Button>
@@ -272,24 +311,35 @@ export function AppointmentFields({
           )}
         </div>
       </FormField>
+        </div>
       {isUnlinkedPending && !petCreatedInForm && (
         <Button
           type="button"
           variant="outline"
           className="w-full"
-          disabled={creatingFromRequest || !selectedClientId || !appointment?.petName || !appointment.species || !appointment.sex}
+          disabled={Boolean(inlineForm) || creatingFromRequest || !selectedClientId || !appointment?.petName || !appointment.species || !appointment.sex}
           onClick={() => createFromRequest('pet')}
         >
           Создать питомца из данных заявки
         </Button>
       )}
       {!appointment && (
-        <Button type="button" variant="outline" className="w-full" onClick={() => onCreatePet(selectedClientId)}>
+        <Button type="button" variant="outline" className="w-full" onClick={() => toggleInlineForm('pet')}
+              disabled={Boolean(inlineForm) || !selectedClientId}>
           Создать питомца
         </Button>
       )}
+      {inlineForm === 'pet' && (
+        <InlineEntityForm
+          type="pet"
+          formId={`${formId}-new-pet`}
+          clientId={selectedClientId}
+          onSave={handleInlinePetAction}
+          onCancel={() => toggleInlineForm()}
+        />
+      )}
       {(appointment || selectedPetId) && (
-        <>
+        <div ref={appointmentDetailsRef} className="scroll-mt-16 space-y-5 lg:scroll-mt-0">
       <FormField id={`${formId}-date`} label='Дата' required>
         {appointment ? <DatePicker
           key={appointmentDate}
@@ -419,6 +469,8 @@ export function AppointmentFields({
           </div>
         )}
       </FormField>
+      {selectedServices.length > 0 && (
+        <>
       <FormField id={`${formId}-calculated-price`} label='Предварительная стоимость'>
         <Input
           id={`${formId}-calculated-price`}
@@ -442,6 +494,8 @@ export function AppointmentFields({
           <HugeiconsIcon icon={ArrowDown02Icon} className='size-6' strokeWidth={2} />
         </Button>
       </div>
+        </>
+      )}
       <FormField id={`${formId}-price`} label='Итоговая стоимость'>
         <Input
           id={`${formId}-price`}
@@ -473,7 +527,7 @@ export function AppointmentFields({
       <FormField id={`${formId}-notes`} label='Заметки'>
         <Textarea id={`${formId}-notes`} name='notes' defaultValue={appointment?.notes ?? ''} />
       </FormField>
-        </>
+        </div>
       )}
         </>
       )}

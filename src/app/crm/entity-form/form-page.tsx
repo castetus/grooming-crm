@@ -36,6 +36,7 @@ export function EntityFormPage({ type, client, pet, groomingService, appointment
   const [clientId, setClientId] = useState(defaultClientId ?? appointment?.clientId ?? undefined);
   const [petId, setPetId] = useState(defaultPetId ?? appointment?.petId ?? undefined);
   const [pending, setPending] = useState(false);
+  const [inlineFormOpen, setInlineFormOpen] = useState(false);
   const [error, setError] = useState('');
   const editing = Boolean(client || pet || groomingService || appointment);
   const titles = { appointment: 'запись', client: 'клиент', pet: 'питомец', 'grooming-service': 'услуга' };
@@ -106,11 +107,13 @@ export function EntityFormPage({ type, client, pet, groomingService, appointment
 
   return (
     <div className="mx-auto w-full max-w-2xl space-y-6 pb-8 pt-4 lg:pt-0">
-      <Link href={backHref} className={buttonVariants({ variant: 'outline', size: 'icon' })} aria-label="Назад" title="Назад">
-        <HugeiconsIcon icon={ArrowLeft01Icon} strokeWidth={2} />
-      </Link>
-      <h1 className="text-2xl font-semibold">{editing ? 'Редактирование' : 'Создание'}: {titles[type]}</h1>
-      <form action={handleAction} autoComplete="off" className="space-y-6 rounded-xl border bg-card p-4 sm:p-6">
+      <div className="flex items-center gap-3">
+        <Link href={backHref} className={buttonVariants({ variant: 'outline', size: 'icon' })} aria-label="Назад" title="Назад">
+          <HugeiconsIcon icon={ArrowLeft01Icon} strokeWidth={2} />
+        </Link>
+        <h1 className="min-w-0 text-2xl font-semibold">{editing ? 'Редактирование' : 'Создание'}: {titles[type]}</h1>
+      </div>
+      <form action={handleAction} onSubmit={(event) => { if (inlineFormOpen) event.preventDefault(); }} autoComplete="off" className="space-y-6 rounded-xl border bg-card p-4 sm:p-6">
         <fieldset disabled={pending} className="min-w-0 space-y-5">
           {type === 'client' && <ClientFields formId={formId} client={client} />}
           {type === 'pet' && <PetFields formId={formId} clientId={pet?.clientId ?? clientId} clients={clients} pet={pet} onCreateClient={() => openRelatedForm('client')} />}
@@ -122,17 +125,18 @@ export function EntityFormPage({ type, client, pet, groomingService, appointment
             options={options}
             defaultClientId={defaultClientId}
             defaultPetId={defaultPetId}
-            onCreateClient={() => openRelatedForm('client')}
             onCreateInlineClient={createInlineClient}
+            onInlineFormChange={setInlineFormOpen}
             onClientSelected={setClientId}
             onPetSelected={setPetId}
-            onCreatePet={(id) => openRelatedForm('pet', id)}
             onInlinePetCreated={() => { void getAppointmentFormOptions().then(setOptions); }}
           />}
           {error && <p role="alert" className="text-sm text-destructive">{error}</p>}
+          <fieldset disabled={inlineFormOpen}>
           {type === 'appointment' && appointment ? (
             <AppointmentActions appointment={appointment} onStatusChanged={() => finish()} />
           ) : <Button type="submit" className="w-full">{pending ? 'Сохранение...' : 'Сохранить'}</Button>}
+          </fieldset>
         </fieldset>
       </form>
     </div>

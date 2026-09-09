@@ -2,7 +2,7 @@
 
 import { ArrowLeft01Icon, ArrowRight01Icon } from '@hugeicons/core-free-icons';
 import { HugeiconsIcon } from '@hugeicons/react';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -27,6 +27,7 @@ export function WeekCalendar({
 }) {
   const [weekStart, setWeekStart] = useState(() => getWeekStart(new Date(initialDate)));
   const router = useRouter();
+  const scrollRef = useRef<HTMLDivElement>(null);
   const clientNames = useMemo(
     () => new Map(clients.map((client) => [client.id, client.name])),
     [clients],
@@ -42,6 +43,12 @@ export function WeekCalendar({
   const { startHour, endHour } = getVisibleHours(weekAppointments);
   const hours = Array.from({ length: endHour - startHour + 1 }, (_, index) => startHour + index);
   const timelineWidth = (endHour - startHour) * hourWidth;
+
+  useEffect(() => {
+    if (scrollRef.current) {
+      scrollRef.current.scrollLeft = (12 - startHour) * hourWidth;
+    }
+  }, [startHour]);
 
   return (
     <section className='isolate flex min-h-0 flex-1 flex-col overflow-hidden rounded-2xl border bg-card'>
@@ -70,7 +77,7 @@ export function WeekCalendar({
         </Button>
       </div>
 
-      <div className='min-h-0 flex-1 overflow-auto'>
+      <div ref={scrollRef} className='min-h-0 flex-1 overflow-auto'>
         <div className='min-w-max'>
           <div className='sticky top-0 z-30 flex h-12 items-end border-b bg-card text-xs text-muted-foreground'>
             <div className='sticky left-0 z-40 w-24 shrink-0 border-r bg-card px-4 sm:w-32' />
@@ -91,6 +98,20 @@ export function WeekCalendar({
             const dayAppointments = weekAppointments.filter((appointment) =>
               isSameDay(new Date(appointment.scheduledStart), day),
             );
+
+            if (dayAppointments.length === 0) {
+              return (
+                <button
+                  key={day.toISOString()}
+                  type="button"
+                  className="block h-5 w-full border-b bg-muted last:border-b-0 hover:bg-muted/80"
+                  aria-label={`Добавить запись: ${formatWeekday(day)}, ${formatDayDate(day)}`}
+                  title={`${formatWeekday(day)}, ${formatDayDate(day)}`}
+                  onClick={() => router.push(`/crm/appointments/new?date=${formatInputDate(day)}`)}
+                />
+              );
+            }
+
             const layeredDayAppointments = [...dayAppointments].sort(
               (first, second) =>
                 new Date(first.createdAt).getTime() - new Date(second.createdAt).getTime(),
