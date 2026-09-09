@@ -74,7 +74,7 @@ export function getBookingConfirmationMessage(
     `Вид: ${species ?? '—'}`,
     `Порода: ${data.breed ?? '—'}`,
     `Пол: ${sex ?? '—'}`,
-    `Место: ${locationType ?? '—'}`,
+    // `Место: ${locationType ?? '—'}`,
     `Желаемые дата и время: ${data.requestedDateTime ?? '—'}`,
     `Комментарий: ${data.notes ?? '—'}`,
   ].join('\n');
