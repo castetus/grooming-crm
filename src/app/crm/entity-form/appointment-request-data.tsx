@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react';
 import type { Appointment } from '@/types/entities';
 
 import { formatRequestedDateTime } from './utils';
@@ -35,7 +36,19 @@ export function AppointmentRequestData({ appointment }: { appointment: Appointme
               <RequestDataField label="Телефон" value={appointment.phone} />
             )}
             {appointment.telegramUsername && (
-              <RequestDataField label="Telegram" value={appointment.telegramUsername} />
+              <RequestDataField
+                label="Telegram"
+                value={
+                  <a
+                    href={`https://t.me/${appointment.telegramUsername.replace(/^@/, '')}`}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="font-medium underline underline-offset-4"
+                  >
+                    {appointment.telegramUsername}
+                  </a>
+                }
+              />
             )}
           </div>
         )}
@@ -70,7 +83,7 @@ export function AppointmentRequestData({ appointment }: { appointment: Appointme
   );
 }
 
-function RequestDataField({ label, value }: { label: string; value: string }) {
+function RequestDataField({ label, value }: { label: string; value: ReactNode }) {
   return (
     <div>
       <p className="text-xs text-muted-foreground">{label}</p>

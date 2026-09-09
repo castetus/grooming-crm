@@ -105,8 +105,30 @@ async function resolveAppointmentRelations(
   formData: FormData,
 ) {
   const note = getString(formData, 'notes');
-  let clientId = getString(formData, 'clientId');
-  let petId = getString(formData, 'petId');
+  const createClient = getString(formData, 'clientMode') === 'create';
+  const createPetFromRequest = getString(formData, 'petMode') === 'create';
+  let clientId = createClient ? null : getString(formData, 'clientId');
+  let petId = createPetFromRequest ? null : getString(formData, 'petId');
+
+  if (!createClient && !clientId && !petId) {
+    throw new Error('Выберите существующего клиента или создание из заявки');
+  }
+
+  if (!createPetFromRequest && !petId) {
+    throw new Error('Выберите существующего питомца или создание из заявки');
+  }
+
+  if (createClient && petId) {
+    throw new Error('Для нового клиента создайте питомца из заявки');
+  }
+
+  if (createClient && !requestData.clientName) {
+    throw new Error('В заявке не указано имя клиента');
+  }
+
+  if (createPetFromRequest && (!requestData.petName || !requestData.species || !requestData.sex)) {
+    throw new Error('В заявке недостаточно данных для создания питомца');
+  }
 
   if (petId) {
     const pet = await getPetById(petId);

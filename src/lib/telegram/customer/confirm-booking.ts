@@ -5,7 +5,7 @@ export async function confirmBooking(session: BookingSession) {
   const start = new Date();
 
   start.setDate(start.getDate() + 1);
-  start.setHours(13, 0, 0, 0);
+  start.setHours(11, 0, 0, 0);
 
   const end = new Date(start);
   end.setHours(14, 0, 0, 0);

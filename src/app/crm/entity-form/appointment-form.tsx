@@ -58,6 +58,8 @@ export function AppointmentFields({
     appointment?.clientId ?? defaultClientId ?? '',
   );
   const [isCreatingClient, setIsCreatingClient] = useState(false);
+  const [creatingFromRequest, setCreatingFromRequest] = useState(false);
+  const [requestCreationError, setRequestCreationError] = useState('');
   const [isCreatingPet, setIsCreatingPet] = useState(false);
   const [createdClientId, setCreatedClientId] = useState<string>();
   const [petCreatedInForm, setPetCreatedInForm] = useState(false);
@@ -112,10 +114,42 @@ export function AppointmentFields({
     onInlinePetCreated();
   }
 
+  async function createFromRequest(entity: 'client' | 'pet') {
+    if (!appointment) return;
+
+    setCreatingFromRequest(true);
+    setRequestCreationError('');
+    const data = new FormData();
+
+    try {
+      if (entity === 'client') {
+        data.set('name', appointment.clientName ?? '');
+        data.set('phone', appointment.phone ?? '');
+        data.set('telegramUsername', appointment.telegramUsername ?? '');
+        await handleInlineClientAction(data);
+        setSelectedPetId('');
+        onPetSelected(undefined);
+      } else {
+        data.set('clientId', selectedClientId);
+        data.set('name', appointment.petName ?? '');
+        data.set('species', appointment.species ?? '');
+        data.set('breed', appointment.breed ?? '');
+        data.set('sex', appointment.sex ?? '');
+        data.set('notes', appointment.notes ?? '');
+        await handleInlinePetAction(data);
+      }
+    } catch (error) {
+      setRequestCreationError(error instanceof Error ? error.message : 'Не удалось создать запись');
+    } finally {
+      setCreatingFromRequest(false);
+    }
+  }
+
   return (
     <>
+      {requestCreationError && <p role="alert" className="text-sm text-destructive">{requestCreationError}</p>}
       {appointment && <AppointmentRequestData appointment={appointment} />}
-      <FormField id={`${formId}-client`} label='Клиент' required={!isUnlinkedPending}>
+      <FormField id={`${formId}-client`} label='Клиент' required>
         <div className='flex gap-2'>
           <SearchableSelect
             id={`${formId}-client`}
@@ -123,7 +157,7 @@ export function AppointmentFields({
             value={selectedClientId}
             className='min-w-0'
             disabled={!options || isCreatingClient}
-            required={!isUnlinkedPending && !isCreatingClient}
+            required={!isCreatingClient}
             options={options?.clients.map((clientOption) => ({
               label: formatClientOption(clientOption),
               value: clientOption.id,
@@ -165,6 +199,17 @@ export function AppointmentFields({
             </Link>
           )}
         </div>
+        {isUnlinkedPending && !clientCreatedInForm && (
+          <Button
+            type="button"
+            variant="outline"
+            className="w-full"
+            disabled={creatingFromRequest || !appointment?.clientName}
+            onClick={() => createFromRequest('client')}
+          >
+            Создать клиента из данных заявки
+          </Button>
+        )}
         {!appointment && !clientCreatedInForm && (
           <Button
             type='button'
@@ -197,8 +242,8 @@ export function AppointmentFields({
       )}
       {(appointment || selectedClientId) && !isCreatingClient && (
         <>
-      {(!clientCreatedInForm || petCreatedInForm) && !isCreatingPet && (
-        <FormField id={`${formId}-pet`} label='Питомец' required={!isUnlinkedPending}>
+      {(isUnlinkedPending || !clientCreatedInForm || petCreatedInForm) && !isCreatingPet && (
+        <FormField id={`${formId}-pet`} label='Питомец' required>
         <div className='flex gap-2'>
           <SearchableSelect
             id={`${formId}-pet`}
@@ -206,7 +251,7 @@ export function AppointmentFields({
             value={selectedPetId}
             className='min-w-0'
             disabled={!options}
-            required={!isUnlinkedPending}
+            required
             options={availablePets.map((petOption) => ({
               label: petOption.breed ? `${petOption.name} — ${petOption.breed}` : petOption.name,
               value: petOption.id,
@@ -256,9 +301,15 @@ export function AppointmentFields({
         </div>
       </FormField>
       )}
-      {isUnlinkedPending && (!selectedClientId || !selectedPetId) && !isCreatingPet && (
-        <Button type='submit' variant='outline' size='lg' className='w-full'>
-          Создать из данных заявки
+      {isUnlinkedPending && !petCreatedInForm && (
+        <Button
+          type="button"
+          variant="outline"
+          className="w-full"
+          disabled={creatingFromRequest || !selectedClientId || !appointment?.petName || !appointment.species || !appointment.sex}
+          onClick={() => createFromRequest('pet')}
+        >
+          Создать питомца из данных заявки
         </Button>
       )}
       {!appointment && !isCreatingPet && !petCreatedInForm && (
