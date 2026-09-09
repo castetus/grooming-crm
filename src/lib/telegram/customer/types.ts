@@ -1,4 +1,6 @@
 export type BookingStep =
+  | 'CLIENT_NAME_CONFIRM'
+  | 'CLIENT_NAME'
   | 'PHONE'
   | 'PET_NAME'
   | 'SPECIES'
@@ -24,7 +26,7 @@ export type BookingSessionData = {
   breed?: string;
   sex?: string;
   locationType?: string;
-  date?: string;
+  requestedDateTime?: string;
   time?: string;
   notes?: string;
 

@@ -6,6 +6,7 @@ import type {
 
 import {
   BOT_MESSAGES,
+  getBookingConfirmationMessage,
   sendCustomerMessage,
 } from './messages';
 
@@ -23,13 +24,13 @@ export async function startBooking({
   await createBookingSession({
     telegramUserId,
     chatId,
-    step: 'PHONE',
+    step: 'CLIENT_NAME_CONFIRM',
     data: {
       clientName: firstName,
     },
   });
 
-    await sendCustomerMessage(
+  await sendCustomerMessage(
     chatId,
     BOT_MESSAGES.confirmClientName(firstName),
     {
@@ -50,10 +51,6 @@ export async function startBooking({
     },
   );
 
-  await sendCustomerMessage(
-    chatId,
-    BOT_MESSAGES.askPhone,
-  );
 }
 
 export async function handleBookingMessage(
@@ -79,6 +76,22 @@ export async function handleBookingMessage(
   }
 
   switch (session.step) {
+    case 'CLIENT_NAME': {
+      await updateBookingSession(telegramUserId, {
+        step: 'PHONE',
+        data: {
+          ...session.data,
+          clientName: value,
+        },
+      });
+
+      await sendCustomerMessage(
+        chatId,
+        BOT_MESSAGES.askPhone,
+      );
+
+      return;
+    }
 
     case 'PHONE': {
       await updateBookingSession(telegramUserId, {
@@ -144,11 +157,11 @@ export async function handleBookingMessage(
           inline_keyboard: [
             [
               {
-                text: '♂ Самец',
+                text: '♂ Мальчик',
                 callback_data: 'sex:male',
               },
               {
-                text: '♀ Самка',
+                text: '♀ Девочка',
                 callback_data: 'sex:female',
               },
             ],
@@ -172,7 +185,23 @@ export async function handleBookingMessage(
 
       await sendCustomerMessage(
         chatId,
-        BOT_MESSAGES.confirm,
+        getBookingConfirmationMessage(session.data),
+        {
+          inline_keyboard: [
+            [
+              {
+                text: '✅ Подтвердить',
+                callback_data: 'booking:confirm',
+              },
+            ],
+            [
+              {
+                text: '❌ Отменить',
+                callback_data: 'booking:cancel',
+              },
+            ],
+          ],
+        },
       );
 
       return;
@@ -215,6 +244,30 @@ export async function handleBookingCallback(
     return;
   }
 
+  if (session.step === 'CLIENT_NAME_CONFIRM') {
+    if (data === 'client_name:confirm') {
+      await updateBookingSession(telegramUserId, {
+        step: 'PHONE',
+      });
+
+      await sendCustomerMessage(
+        chatId,
+        BOT_MESSAGES.askPhone,
+      );
+    } else if (data === 'client_name:change') {
+      await updateBookingSession(telegramUserId, {
+        step: 'CLIENT_NAME',
+      });
+
+      await sendCustomerMessage(
+        chatId,
+        BOT_MESSAGES.askClientName,
+      );
+    }
+
+    return;
+  }
+
   if (
     session.step === 'SPECIES' &&
     data.startsWith('species:')
@@ -244,7 +297,7 @@ export async function handleBookingCallback(
     const sex = data.split(':')[1];
 
     await updateBookingSession(telegramUserId, {
-      step: 'LOCATION_TYPE',
+      step: 'NOTES',
       data: {
         ...session.data,
         sex,
@@ -253,43 +306,10 @@ export async function handleBookingCallback(
 
     await sendCustomerMessage(
       chatId,
-      BOT_MESSAGES.askLocationType,
-      {
-        inline_keyboard: [
-          [
-            {
-              text: 'Салон',
-              callback_data: 'location:salon',
-            },
-            {
-              text: 'На дому',
-              callback_data: 'location:home',
-            },
-          ],
-        ],
-      },
+      BOT_MESSAGES.askNotes,
     );
 
     return;
   }
 
-  if (
-    session.step === 'LOCATION_TYPE' &&
-    data.startsWith('location:')
-  ) {
-    const locationType = data.split(':')[1];
-
-    await updateBookingSession(telegramUserId, {
-      step: 'DATE',
-      data: {
-        ...session.data,
-        locationType,
-      },
-    });
-
-    await sendCustomerMessage(
-      chatId,
-      BOT_MESSAGES.askDate,
-    );
-  }
 }
