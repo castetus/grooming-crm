@@ -94,7 +94,8 @@ export async function handleBookingMessage(
   switch (session.step) {
     case 'CLIENT_NAME': {
       await updateBookingSession(telegramUserId, {
-        step: 'PHONE',
+        // step: 'PHONE',
+        step: 'PET_NAME',
         data: {
           ...session.data,
           clientName: value,
@@ -103,28 +104,29 @@ export async function handleBookingMessage(
 
       await sendCustomerMessage(
         chatId,
-        BOT_MESSAGES.askPhone,
-      );
-
-      return;
-    }
-
-    case 'PHONE': {
-      await updateBookingSession(telegramUserId, {
-        step: 'PET_NAME',
-        data: {
-          ...session.data,
-          phone: value,
-        },
-      });
-
-      await sendCustomerMessage(
-        chatId,
+        // BOT_MESSAGES.askPhone,
         BOT_MESSAGES.askPetName,
       );
 
       return;
     }
+
+    // case 'PHONE': {
+    //   await updateBookingSession(telegramUserId, {
+    //     step: 'PET_NAME',
+    //     data: {
+    //       ...session.data,
+    //       phone: value,
+    //     },
+    //   });
+    //
+    //   await sendCustomerMessage(
+    //     chatId,
+    //     BOT_MESSAGES.askPetName,
+    //   );
+    //
+    //   return;
+    // }
 
     case 'PET_NAME': {
       await updateBookingSession(telegramUserId, {
@@ -207,18 +209,19 @@ export async function handleBookingMessage(
 
     case 'NOTES': {
       const notes = value === '-' ? undefined : value;
+      const data = {
+        ...session.data,
+        notes,
+      };
 
       await updateBookingSession(telegramUserId, {
         step: 'CONFIRM',
-        data: {
-          ...session.data,
-          notes,
-        },
+        data,
       });
 
       await sendCustomerMessage(
         chatId,
-        getBookingConfirmationMessage(session.data),
+        getBookingConfirmationMessage(data),
         {
           inline_keyboard: [
             [
@@ -281,12 +284,14 @@ export async function handleBookingCallback(
   if (session.step === 'CLIENT_NAME_CONFIRM') {
     if (data === 'client_name:confirm') {
       await updateBookingSession(telegramUserId, {
-        step: 'PHONE',
+        // step: 'PHONE',
+        step: 'PET_NAME',
       });
 
       await sendCustomerMessage(
         chatId,
-        BOT_MESSAGES.askPhone,
+        // BOT_MESSAGES.askPhone,
+        BOT_MESSAGES.askPetName,
       );
     } else if (data === 'client_name:change') {
       await updateBookingSession(telegramUserId, {
@@ -341,6 +346,20 @@ export async function handleBookingCallback(
     await sendCustomerMessage(
       chatId,
       BOT_MESSAGES.askDate,
+    );
+
+    return;
+  }
+
+  if (
+    session.step === 'CONFIRM' &&
+    data === 'booking:cancel'
+  ) {
+    await deleteBookingSession(telegramUserId);
+
+    await sendCustomerMessage(
+      chatId,
+      BOT_MESSAGES.bookingCancelled,
     );
 
     return;
