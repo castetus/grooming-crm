@@ -14,7 +14,7 @@ import { getMediaUrl } from '@/services/media.service';
 import { searchPets } from '@/services/pets.service';
 
 import { PageHeader } from '../page-header';
-import { EntityFormSheet } from '../entity-form-sheet';
+import { EntityFormLink } from '../entity-form-link';
 
 export default async function PetsPage({
   searchParams,
@@ -76,7 +76,7 @@ export default async function PetsPage({
                     <td className='px-5 py-4'>{formatInterval(pet.recommendedIntervalDays)}</td>
                     <td className='px-5 py-4'>
                       <div className='flex justify-end'>
-                        <EntityFormSheet
+                        <EntityFormLink
                           type='pet'
                           actionLabel='Редактировать питомца'
                           pet={pet}
@@ -117,7 +117,7 @@ export default async function PetsPage({
                     </div>
                   </div>
                   <CardAction>
-                    <EntityFormSheet
+                    <EntityFormLink
                       type='pet'
                       actionLabel='Редактировать питомца'
                       pet={pet}

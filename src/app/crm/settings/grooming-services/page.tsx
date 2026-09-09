@@ -6,7 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { getActiveGroomingServices } from '@/services/grooming-services.service';
 import type { GroomingService } from '@/types/entities';
 
-import { EntityFormSheet } from '../../entity-form-sheet';
+import { EntityFormLink } from '../../entity-form-link';
 import { PageHeader } from '../../page-header';
 import { archiveGroomingServiceAction } from './actions';
 
@@ -90,7 +90,7 @@ export default async function GroomingServicesPage() {
 function ServiceActions({ service }: { service: GroomingService }) {
   return (
     <div className='flex justify-end gap-1'>
-      <EntityFormSheet
+      <EntityFormLink
         type='grooming-service'
         actionLabel='Редактировать услугу'
         groomingService={service}

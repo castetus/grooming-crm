@@ -17,7 +17,7 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 
-import { EntityFormSheet, type EntityFormType } from './entity-form-sheet';
+import { EntityFormLink, type EntityFormType } from './entity-form-link';
 
 const navigationItems = [
   { label: 'Календарь', href: '/crm', icon: Calendar03Icon },
@@ -58,7 +58,7 @@ export function CrmNavigation() {
         </Link>
         <div className="flex items-center gap-1">
           {mobileAction && (
-            <EntityFormSheet
+            <EntityFormLink
               key={mobileAction.type}
               type={mobileAction.type}
               actionLabel={mobileAction.label}

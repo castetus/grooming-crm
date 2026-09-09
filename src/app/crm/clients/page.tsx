@@ -12,7 +12,7 @@ import { DebouncedSearchInput } from '@/components/debounced-search-input';
 import { searchClients } from '@/services/client.service';
 
 import { PageHeader } from '../page-header';
-import { EntityFormSheet } from '../entity-form-sheet';
+import { EntityFormLink } from '../entity-form-link';
 
 export default async function ClientsPage({
   searchParams,
@@ -65,7 +65,7 @@ export default async function ClientsPage({
                     <td className='max-w-xs truncate px-5 py-4'>{client.address ?? '—'}</td>
                     <td className='px-5 py-4'>
                       <div className='flex justify-end'>
-                        <EntityFormSheet
+                        <EntityFormLink
                           type='client'
                           actionLabel='Редактировать клиента'
                           client={client}
@@ -93,7 +93,7 @@ export default async function ClientsPage({
                   </CardTitle>
                   <CardDescription>{client.phone ?? 'Телефон не указан'}</CardDescription>
                   <CardAction>
-                    <EntityFormSheet
+                    <EntityFormLink
                       type='client'
                       actionLabel='Редактировать клиента'
                       client={client}

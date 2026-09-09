@@ -1,4 +1,4 @@
-import { EntityFormSheet, type EntityFormType } from './entity-form-sheet';
+import { EntityFormLink, type EntityFormType } from './entity-form-link';
 
 export function PageHeader({
   title,
@@ -12,7 +12,7 @@ export function PageHeader({
   return (
     <div className='flex items-center justify-between'>
       <h1 className='text-2xl font-semibold tracking-tight'>{title}</h1>
-      <EntityFormSheet
+      <EntityFormLink
         key={formType}
         type={formType}
         actionLabel={actionLabel}

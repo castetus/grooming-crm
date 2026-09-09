@@ -7,7 +7,7 @@ import { getClientById } from '@/services/client.service';
 import { getMediaUrl } from '@/services/media.service';
 import { getPetById } from '@/services/pets.service';
 
-import { EntityFormSheet } from '../../entity-form-sheet';
+import { EntityFormLink } from '../../entity-form-link';
 import { archivePetAction } from '../actions';
 
 export default async function PetPage({
@@ -44,7 +44,7 @@ export default async function PetPage({
         </div>
         {!pet.archivedAt && (
           <div className='flex flex-col gap-2 sm:flex-row'>
-            <EntityFormSheet type='pet' actionLabel='Редактировать' pet={pet} />
+            <EntityFormLink type='pet' actionLabel='Редактировать' pet={pet} />
             <form action={archivePetAction.bind(null, pet.id)}>
               <Button type='submit' variant='outline' className='w-full sm:w-auto'>
                 В архив

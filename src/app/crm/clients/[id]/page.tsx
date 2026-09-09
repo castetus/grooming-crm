@@ -7,7 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { getClientById } from '@/services/client.service';
 import { getPetsByClientId } from '@/services/pets.service';
 
-import { EntityFormSheet } from '../../entity-form-sheet';
+import { EntityFormLink } from '../../entity-form-link';
 import { archiveClientAction } from '../actions';
 
 export default async function ClientPage({
@@ -36,7 +36,7 @@ export default async function ClientPage({
         </div>
         {!client.archivedAt && (
           <div className='flex flex-col gap-2 sm:flex-row'>
-            <EntityFormSheet
+            <EntityFormLink
               type='client'
               actionLabel='Редактировать'
               client={client}

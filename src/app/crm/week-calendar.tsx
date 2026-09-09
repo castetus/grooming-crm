@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import type { Appointment, Client, Pet } from '@/types/entities';
 
-import { EntityFormSheet } from './entity-form-sheet';
+import { useRouter } from 'next/navigation';
 
 const hourWidth = 88;
 const defaultStartHour = 8;
@@ -26,8 +26,7 @@ export function WeekCalendar({
   initialDate: string;
 }) {
   const [weekStart, setWeekStart] = useState(() => getWeekStart(new Date(initialDate)));
-  const [selectedDate, setSelectedDate] = useState<string>();
-  const [selectedAppointment, setSelectedAppointment] = useState<Appointment>();
+  const router = useRouter();
   const clientNames = useMemo(
     () => new Map(clients.map((client) => [client.id, client.name])),
     [clients],
@@ -107,8 +106,7 @@ export function WeekCalendar({
                   className='relative cursor-pointer'
                   style={{ width: timelineWidth }}
                   onClick={() => {
-                    setSelectedAppointment(undefined);
-                    setSelectedDate(formatInputDate(day));
+                    router.push(`/crm/appointments/new?date=${formatInputDate(day)}`);
                   }}
                 >
                   {layeredDayAppointments.map((appointment, index) => {
@@ -132,8 +130,7 @@ export function WeekCalendar({
                         }}
                         onClick={(event) => {
                           event.stopPropagation();
-                          setSelectedDate(undefined);
-                          setSelectedAppointment(appointment);
+                          router.push(`/crm/appointments/${encodeURIComponent(appointment.id)}/edit`);
                         }}
                       >
                         <div className='flex items-center justify-between gap-2 text-xs font-medium'>
@@ -161,24 +158,7 @@ export function WeekCalendar({
           })}
         </div>
       </div>
-      <EntityFormSheet
-        type='appointment'
-        actionLabel='Добавить запись'
-        appointmentDate={
-          selectedAppointment
-            ? formatInputDate(new Date(selectedAppointment.scheduledStart))
-            : selectedDate
-        }
-        appointment={selectedAppointment}
-        open={Boolean(selectedDate || selectedAppointment)}
-        onOpenChange={(open) => {
-          if (!open) {
-            setSelectedDate(undefined);
-            setSelectedAppointment(undefined);
-          }
-        }}
-        hideTrigger
-      />
+
     </section>
   );
 }
