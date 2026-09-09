@@ -6,6 +6,8 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+import { getAppointmentColor } from './calendar-utils';
+import type { CalendarMode } from './calendar-preferences';
 import type { Appointment, Client, Pet } from '@/types/entities';
 
 import { useRouter } from 'next/navigation';
@@ -14,18 +16,25 @@ const hourWidth = 88;
 const defaultStartHour = 8;
 const defaultEndHour = 20;
 
-export function WeekCalendar({
+export function CalendarTimeline({
   appointments,
   clients,
   pets,
   initialDate,
+  mode,
 }: {
   appointments: Appointment[];
   clients: Client[];
   pets: Pet[];
   initialDate: string;
+  mode: CalendarMode;
 }) {
-  const [weekStart, setWeekStart] = useState(() => getWeekStart(new Date(initialDate)));
+  const [periodStart, setPeriodStart] = useState(() => {
+    const date = new Date(initialDate);
+    return mode === 'month'
+      ? new Date(date.getFullYear(), date.getMonth(), 1)
+      : getWeekStart(date);
+  });
   const router = useRouter();
   const scrollRef = useRef<HTMLDivElement>(null);
   const clientNames = useMemo(
@@ -33,14 +42,17 @@ export function WeekCalendar({
     [clients],
   );
   const petNames = useMemo(() => new Map(pets.map((pet) => [pet.id, pet.name])), [pets]);
-  const days = Array.from({ length: 7 }, (_, index) => addDays(weekStart, index));
-  const weekEnd = addDays(weekStart, 7);
-  const weekAppointments = appointments.filter((appointment) => {
+  const dayCount = mode === 'month'
+    ? new Date(periodStart.getFullYear(), periodStart.getMonth() + 1, 0).getDate()
+    : 7;
+  const days = Array.from({ length: dayCount }, (_, index) => addDays(periodStart, index));
+  const periodEnd = addDays(periodStart, dayCount);
+  const periodAppointments = appointments.filter((appointment) => {
     const start = new Date(appointment.scheduledStart);
 
-    return start >= weekStart && start < weekEnd;
+    return start >= periodStart && start < periodEnd;
   });
-  const { startHour, endHour } = getVisibleHours(weekAppointments);
+  const { startHour, endHour } = getVisibleHours(periodAppointments);
   const hours = Array.from({ length: endHour - startHour + 1 }, (_, index) => startHour + index);
   const timelineWidth = (endHour - startHour) * hourWidth;
 
@@ -50,6 +62,12 @@ export function WeekCalendar({
     }
   }, [startHour]);
 
+  function changePeriod(direction: number) {
+    setPeriodStart(mode === 'month'
+      ? new Date(periodStart.getFullYear(), periodStart.getMonth() + direction, 1)
+      : addDays(periodStart, direction * 7));
+  }
+
   return (
     <section className='isolate flex min-h-0 flex-1 flex-col overflow-hidden rounded-2xl border bg-card'>
       <div className='flex shrink-0 items-center justify-between gap-3 border-b px-4 py-3 sm:px-5'>
@@ -57,21 +75,23 @@ export function WeekCalendar({
           type='button'
           variant='ghost'
           size='icon'
-          aria-label='Предыдущая неделя'
-          onClick={() => setWeekStart(addDays(weekStart, -7))}
+          aria-label={mode === 'month' ? 'Предыдущий месяц' : 'Предыдущая неделя'}
+          onClick={() => changePeriod(-1)}
         >
           <HugeiconsIcon icon={ArrowLeft01Icon} strokeWidth={2} />
         </Button>
         <div className='text-center'>
-          <p className='font-medium'>{formatWeekRange(weekStart, days[6])}</p>
-          <p className='text-xs text-muted-foreground'>Неделя</p>
+          <p className="font-medium">{mode === 'month'
+            ? periodStart.toLocaleDateString('ru-RU', { month: 'long', year: 'numeric' })
+            : formatWeekRange(periodStart, days[6])}</p>
+          <p className="text-xs text-muted-foreground">{mode === 'month' ? 'Месяц' : 'Неделя'}</p>
         </div>
         <Button
           type='button'
           variant='ghost'
           size='icon'
-          aria-label='Следующая неделя'
-          onClick={() => setWeekStart(addDays(weekStart, 7))}
+          aria-label={mode === 'month' ? 'Следующий месяц' : 'Следующая неделя'}
+          onClick={() => changePeriod(1)}
         >
           <HugeiconsIcon icon={ArrowRight01Icon} strokeWidth={2} />
         </Button>
@@ -95,7 +115,7 @@ export function WeekCalendar({
           </div>
 
           {days.map((day) => {
-            const dayAppointments = weekAppointments.filter((appointment) =>
+            const dayAppointments = periodAppointments.filter((appointment) =>
               isSameDay(new Date(appointment.scheduledStart), day),
             );
 
@@ -260,17 +280,4 @@ function formatInputDate(date: Date) {
   const day = String(date.getDate()).padStart(2, '0');
 
   return `${year}-${month}-${day}`;
-}
-
-function getAppointmentColor(status: Appointment['status']) {
-  switch (status) {
-    case 'completed':
-      return 'border-emerald-200 bg-emerald-50 text-emerald-900 dark:border-emerald-800/60 dark:bg-emerald-950/50 dark:text-emerald-100';
-    case 'cancelled':
-      return 'border-rose-200 bg-rose-50 text-rose-900 dark:border-rose-800/60 dark:bg-rose-950/50 dark:text-rose-100';
-    case 'pending':
-      return 'border-amber-200 bg-amber-50 text-amber-900 dark:border-amber-800/60 dark:bg-amber-950/50 dark:text-amber-100';
-    default:
-      return 'border-blue-200 bg-blue-50 text-blue-900 dark:border-blue-800/60 dark:bg-blue-950/50 dark:text-blue-100';
-  }
 }

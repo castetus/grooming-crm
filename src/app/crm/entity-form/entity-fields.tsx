@@ -91,7 +91,7 @@ export function PetFields({ formId, clientId, clients, pet, hideClientSelection 
           </FormField>
         </>
       )}
-      <FormField id={`${formId}-name`} label='Кличка' required><Input id={`${formId}-name`} name={fieldName('name')} defaultValue={pet?.name} required /></FormField>
+      <FormField id={`${formId}-name`} label='Имя' required><Input id={`${formId}-name`} name={fieldName('name')} defaultValue={pet?.name} required /></FormField>
       <FormField id={`${formId}-photo`} label='Фотография'>
         <Input id={`${formId}-photo`} name={fieldName('photo')} type='file' accept='image/*' />
         {pet?.photoPath && <div className='space-y-1 text-xs text-muted-foreground'><p className='break-all'>{pet.photoPath}</p><p>Новый файл заменит текущую фотографию.</p></div>}
@@ -100,7 +100,7 @@ export function PetFields({ formId, clientId, clients, pet, hideClientSelection 
       <FormField id={`${formId}-breed`} label='Порода'><Input id={`${formId}-breed`} name={fieldName('breed')} defaultValue={pet?.breed ?? ''} /></FormField>
       <FormField id={`${formId}-birth-date`} label='Дата рождения'>{pet ? <Input id={`${formId}-birth-date`} name={fieldName('birthDate')} type='date' defaultValue={pet.birthDate ?? ''} /> : <DatePicker id={`${formId}-birth-date`} name={fieldName('birthDate')} />}</FormField>
       <FormField id={`${formId}-sex`} label='Пол' required><Select id={`${formId}-sex`} name={fieldName('sex')} required defaultValue={pet?.sex ?? 'male'}><option value='male'>Самец</option><option value='female'>Самка</option></Select></FormField>
-      <FormField id={`${formId}-grooming-plan`} label='План груминга'><Textarea id={`${formId}-grooming-plan`} name={fieldName('groomingPlan')} defaultValue={pet?.groomingPlan ?? ''} /></FormField>
+      <FormField id={`${formId}-grooming-plan`} label='Груминг:'><Textarea id={`${formId}-grooming-plan`} name={fieldName('groomingPlan')} defaultValue={pet?.groomingPlan ?? ''} /></FormField>
       <FormField id={`${formId}-interval`} label='Рекомендуемый интервал, дней'><Input id={`${formId}-interval`} name={fieldName('recommendedIntervalDays')} type='number' min='1' defaultValue={pet?.recommendedIntervalDays ?? ''} /></FormField>
       <FormField id={`${formId}-notes`} label='Заметки'><Textarea id={`${formId}-notes`} name={fieldName('notes')} defaultValue={pet?.notes ?? ''} /></FormField>
     </>

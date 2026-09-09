@@ -56,7 +56,7 @@ export function AppointmentRequestData({ appointment }: { appointment: Appointme
           <div className="space-y-2 text-sm">
             <p className="font-medium">Питомец</p>
             {appointment.petName && (
-              <RequestDataField label="Кличка" value={appointment.petName} />
+              <RequestDataField label="Имя" value={appointment.petName} />
             )}
             {appointment.species && (
               <RequestDataField

@@ -1,15 +1,17 @@
 import { PageHeader } from './page-header';
-import { WeekCalendar } from './week-calendar';
+import { CalendarTimeline } from './calendar-timeline';
+import { getCalendarMode } from './calendar-preferences';
 import { getAppointments } from '@/services/appointments.service';
 import { getClients } from '@/services/client.service';
 import { getPets } from '@/services/pets.service';
 import { createMockPendingAppointment } from '@/mocks/appointments';
 
 export default async function CalendarPage() {
-  const [appointments, clients, pets] = await Promise.all([
+  const [appointments, clients, pets, mode] = await Promise.all([
     getAppointments(),
     getClients(),
     getPets(),
+    getCalendarMode(),
   ]);
   const visibleAppointments = process.env.NODE_ENV === 'development'
     ? [...appointments, createMockPendingAppointment()]
@@ -24,7 +26,9 @@ export default async function CalendarPage() {
           formType='appointment'
         />
       </div>
-      <WeekCalendar
+      <CalendarTimeline
+        key={mode}
+        mode={mode}
         appointments={visibleAppointments}
         clients={clients}
         pets={pets}
