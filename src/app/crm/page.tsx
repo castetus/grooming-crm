@@ -4,7 +4,6 @@ import { getCalendarMode } from './calendar-preferences';
 import { getAppointments } from '@/services/appointments.service';
 import { getClients } from '@/services/client.service';
 import { getPets } from '@/services/pets.service';
-import { createMockPendingAppointment } from '@/mocks/appointments';
 
 export default async function CalendarPage() {
   const [appointments, clients, pets, mode] = await Promise.all([
@@ -13,9 +12,6 @@ export default async function CalendarPage() {
     getPets(),
     getCalendarMode(),
   ]);
-  const visibleAppointments = process.env.NODE_ENV === 'development'
-    ? [...appointments, createMockPendingAppointment()]
-    : appointments;
 
   return (
     <div className='-mx-4 flex h-[calc(100dvh-1rem)] flex-col gap-6 overflow-hidden sm:mx-0 lg:h-[calc(100dvh-5rem)]'>
@@ -29,7 +25,7 @@ export default async function CalendarPage() {
       <CalendarTimeline
         key={mode}
         mode={mode}
-        appointments={visibleAppointments}
+        appointments={appointments}
         clients={clients}
         pets={pets}
         initialDate={new Date().toISOString()}

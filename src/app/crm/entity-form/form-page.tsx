@@ -10,7 +10,7 @@ import type { Appointment, Client, GroomingService, Pet } from '@/types/entities
 import { createClientAction, updateClientAction } from '../clients/actions';
 import { createPetAction, updatePetAction } from '../pets/actions';
 import { createGroomingServiceAction, updateGroomingServiceAction } from '../settings/grooming-services/actions';
-import { confirmAppointmentAction, createAppointmentAction, createAppointmentFromRequestAction, getAppointmentFormOptions, resolvePendingAppointmentAction, updateAppointmentAction } from '../appointment-actions';
+import { confirmAppointmentAction, createAppointmentAction, getAppointmentFormOptions, resolvePendingAppointmentAction, updateAppointmentAction } from '../appointment-actions';
 import { AppointmentFields, type AppointmentFormOptions } from './appointment-form';
 import { AppointmentActions } from './appointment-actions';
 import { ClientFields, PetFields, GroomingServiceFields, type ClientOption } from './entity-fields';
@@ -84,8 +84,7 @@ export function EntityFormPage({ type, client, pet, groomingService, appointment
       } else if (!appointment) {
         await createAppointmentAction(formData);
       } else if (appointment.status === 'pending' && (!appointment.clientId || !appointment.petId)) {
-        if (appointment.temporary) await createAppointmentFromRequestAction(appointment, formData);
-        else await resolvePendingAppointmentAction(appointment.id, formData);
+        await resolvePendingAppointmentAction(appointment.id, formData);
       } else {
         await updateAppointmentAction(appointment.id, formData);
         if (appointment.status === 'pending') await confirmAppointmentAction(appointment.id);

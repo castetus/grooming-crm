@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/server';
 import { createAdminClient } from '@/lib/supabase/admin';
+import { notifyGroomerAboutNewAppointment } from '@/lib/telegram/messages';
 import type {
   Appointment,
   AppointmentStatus,
@@ -59,7 +60,15 @@ export async function createPendingAppointment(
 
   if (error) throw error;
 
-  return mapAppointment(data);
+  const appointment = mapAppointment(data);
+
+  try {
+    await notifyGroomerAboutNewAppointment(appointment);
+  } catch (error) {
+    console.error('Telegram notification failed', error);
+  }
+
+  return appointment;
 }
 
 export async function getAppointments(): Promise<Appointment[]> {

@@ -85,21 +85,6 @@ export async function resolvePendingAppointmentAction(id: string, formData: Form
   revalidatePath('/crm/pets');
 }
 
-export async function createAppointmentFromRequestAction(
-  requestData: AppointmentRequestData,
-  formData: FormData,
-) {
-  const { clientId, petId } = await resolveAppointmentRelations(requestData, formData);
-
-  formData.set('clientId', clientId);
-  formData.set('petId', petId);
-  await createAppointment(getAppointmentInput(formData));
-
-  revalidatePath('/crm');
-  revalidatePath('/crm/clients');
-  revalidatePath('/crm/pets');
-}
-
 async function resolveAppointmentRelations(
   requestData: AppointmentRequestData,
   formData: FormData,

@@ -3,6 +3,8 @@ import { sendTelegramMessage } from './client';
 
 type SendGroomerMessageOptions = {
   parseMode?: 'HTML';
+  replyMarkup?: object;
+  replyParameters?: { message_id: number };
 };
 
 export async function sendGroomerMessage(
@@ -25,52 +27,54 @@ export async function sendGroomerMessage(
     chatId,
     text,
     parseMode: options.parseMode,
+    replyMarkup: options.replyMarkup,
+    replyParameters: options.replyParameters,
   });
 }
 
 export function formatNewAppointmentMessage(
   appointment: Appointment,
 ) {
-  const {
-    clientName,
-    phone,
-    telegramUsername,
-    petName,
-    species,
-    breed,
-    sex,
-    scheduledStart,
-    scheduledEnd,
-    locationType,
-    address,
-    estimatedPrice,
-    notes,
-  } = appointment;
+  const text = (value: string | number | null | undefined) =>
+    String(value ?? '—')
+      .replaceAll('&', '&amp;')
+      .replaceAll('<', '&lt;')
+      .replaceAll('>', '&gt;')
+      .replaceAll('"', '&quot;');
+  const username = appointment.telegramUsername?.replace(/^@/, '');
 
-  const lines = [
+  return [
     '🐾 <b>Новая заявка</b>',
     '',
-    clientName && `<b>Клиент:</b> ${clientName}`,
-    phone && `<b>Телефон:</b> <a href="tel:${phone}">${phone}</a>`,
-    telegramUsername &&
-      `<b>Telegram:</b> <a href="https://t.me/${telegramUsername.replace('@', '')}">${telegramUsername}</a>`,
+    `<b>ID заявки:</b> ${text(appointment.id)}`,
+    `<b>Статус:</b> ${text(appointment.status)}`,
     '',
-    petName && `<b>Питомец:</b> ${petName}`,
-    species && `<b>Вид:</b> ${species}`,
-    breed && `<b>Порода:</b> ${breed}`,
-    sex && `<b>Пол:</b> ${sex}`,
+    `<b>Клиент:</b> ${text(appointment.clientName)}`,
+    `<b>Телефон:</b> ${text(appointment.phone)}`,
+    username
+      ? `<b>Telegram:</b> <a href="https://t.me/${encodeURIComponent(username)}">${text(appointment.telegramUsername)}</a>`
+      : '<b>Telegram:</b> —',
+    `<b>Telegram ID:</b> ${text(appointment.telegramUserId)}`,
+    `<b>ID клиента:</b> ${text(appointment.clientId)}`,
     '',
-    `<b>Начало:</b> ${scheduledStart}`,
-    `<b>Конец:</b> ${scheduledEnd}`,
-    `<b>Формат:</b> ${locationType}`,
-    address && `<b>Адрес:</b> ${address}`,
-    estimatedPrice != null &&
-      `<b>Цена:</b> ${estimatedPrice} RSD`,
+    `<b>Питомец:</b> ${text(appointment.petName)}`,
+    `<b>Вид:</b> ${text(appointment.species)}`,
+    `<b>Порода:</b> ${text(appointment.breed)}`,
+    `<b>Пол:</b> ${text(appointment.sex)}`,
+    `<b>ID питомца:</b> ${text(appointment.petId)}`,
     '',
-    notes && `<b>Комментарий:</b> ${notes}`,
-  ];
-
-  return lines.filter(Boolean).join('\n');
+    `<b>Начало:</b> ${text(appointment.scheduledStart)}`,
+    `<b>Конец:</b> ${text(appointment.scheduledEnd)}`,
+    `<b>Формат:</b> ${text(appointment.locationType)}`,
+    `<b>Адрес:</b> ${text(appointment.address)}`,
+    `<b>Цена (RSD):</b> ${text(appointment.estimatedPrice)}`,
+    `<b>ID грумера:</b> ${text(appointment.groomerId)}`,
+    '',
+    `<b>Комментарий:</b> ${text(appointment.notes)}`,
+    '',
+    `<b>Создана:</b> ${text(appointment.createdAt)}`,
+    `<b>Обновлена:</b> ${text(appointment.updatedAt)}`,
+  ].join('\n');
 }
 
 export async function notifyGroomerAboutNewAppointment(

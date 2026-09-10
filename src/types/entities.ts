@@ -18,6 +18,7 @@ export type AppointmentStatus =
     phone: string | null;
     telegramUsername: string | null;
     telegramChatId: number | null;
+    telegramUserId: number | null;
     preferredLanguage: PreferredLanguage;
     address: string | null;
     notes: string | null;
@@ -55,7 +56,6 @@ export type AppointmentStatus =
 
 export interface Appointment {
   id: string;
-  temporary?: boolean;
 
   clientId: string | null;
   petId: string | null;

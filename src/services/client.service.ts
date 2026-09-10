@@ -1,3 +1,4 @@
+import type { SupabaseClient } from '@supabase/supabase-js';
 import { createClient } from '@/lib/supabase/server';
 import type { Client, PreferredLanguage } from '@/types/entities';
 import { mapClient } from './mappers';
@@ -7,6 +8,7 @@ export interface CreateClientInput {
   phone?: string | null;
   telegramUsername?: string | null;
   telegramChatId?: number | null;
+  telegramUserId?: number | null;
   preferredLanguage?: PreferredLanguage;
   address?: string | null;
   notes?: string | null;
@@ -42,10 +44,27 @@ export async function getClientById(id: string): Promise<Client | null> {
   return data ? mapClient(data) : null;
 }
 
+export async function getClientByTelegramUserId(
+  telegramUserId: number,
+  database?: SupabaseClient,
+): Promise<Client | null> {
+  const supabase = database ?? await createClient();
+  const { data, error } = await supabase
+    .from('clients')
+    .select('*')
+    .eq('telegram_user_id', telegramUserId)
+    .maybeSingle();
+
+  if (error) throw error;
+
+  return data ? mapClient(data) : null;
+}
+
 export async function createClientEntity(
   input: CreateClientInput,
+  database?: SupabaseClient,
 ): Promise<Client> {
-  const supabase = await createClient();
+  const supabase = database ?? await createClient();
 
   const { data, error } = await supabase
     .from('clients')
@@ -54,6 +73,7 @@ export async function createClientEntity(
       phone: input.phone ?? null,
       telegram_username: input.telegramUsername ?? null,
       telegram_chat_id: input.telegramChatId ?? null,
+      telegram_user_id: input.telegramUserId ?? null,
       preferred_language: input.preferredLanguage ?? 'ru',
       address: input.address ?? null,
       notes: input.notes ?? null,
@@ -78,6 +98,9 @@ export async function updateClient(
   if (input.phone !== undefined) payload.phone = input.phone;
   if (input.telegramUsername !== undefined) {
     payload.telegram_username = input.telegramUsername;
+  }
+  if (input.telegramUserId !== undefined) {
+    payload.telegram_user_id = input.telegramUserId;
   }
   if (input.telegramChatId !== undefined) {
     payload.telegram_chat_id = input.telegramChatId;

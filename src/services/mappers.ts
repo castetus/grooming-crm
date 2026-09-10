@@ -15,6 +15,7 @@ export function mapClient(row: any): Client {
     phone: row.phone,
     telegramUsername: row.telegram_username,
     telegramChatId: row.telegram_chat_id,
+    telegramUserId: row.telegram_user_id ?? null,
     preferredLanguage: row.preferred_language,
     address: row.address,
     notes: row.notes,

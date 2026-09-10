@@ -6,6 +6,7 @@ type SendTelegramMessageParams = {
   text: string;
   parseMode?: 'HTML';
   replyMarkup?: object;
+  replyParameters?: { message_id: number };
 };
 
 export async function sendTelegramMessage({
@@ -14,6 +15,7 @@ export async function sendTelegramMessage({
   text,
   parseMode,
   replyMarkup,
+  replyParameters,
 }: SendTelegramMessageParams) {
   const response = await fetch(
     `https://api.telegram.org/bot${token}/sendMessage`,
@@ -27,6 +29,7 @@ export async function sendTelegramMessage({
         text,
         parse_mode: parseMode,
         reply_markup: replyMarkup,
+        reply_parameters: replyParameters,
       }),
     },
   );
@@ -37,4 +40,14 @@ export async function sendTelegramMessage({
   }
 
   return response.json();
+}
+export async function answerTelegramCallbackQuery(token: string, callbackQueryId: string) {
+  const response = await fetch(`https://api.telegram.org/bot${token}/answerCallbackQuery`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ callback_query_id: callbackQueryId }),
+  });
+  if (!response.ok) {
+    throw new Error(`Telegram API error: ${await response.text()}`);
+  }
 }
