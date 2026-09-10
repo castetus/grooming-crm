@@ -8,10 +8,10 @@ import { CrmNavigation } from './navigation';
 export default async function CrmLayout({ children }: { children: ReactNode }) {
   const supabase = await createClient();
   const {
-    data: { user },
-  } = await supabase.auth.getUser();
+    data,
+  } = await supabase.auth.getClaims();
 
-  if (!user) {
+  if (!data?.claims) {
     redirect('/login');
   }
 

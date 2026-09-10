@@ -5,10 +5,10 @@ import { LoginForm } from './login-form';
 export default async function LoginPage() {
   const supabase = await createClient();
   const {
-    data: { user },
-  } = await supabase.auth.getUser();
+    data,
+  } = await supabase.auth.getClaims();
 
-  if (user) {
+  if (data?.claims) {
     redirect('/crm');
   }
 
