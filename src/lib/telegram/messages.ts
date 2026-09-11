@@ -1,4 +1,6 @@
 import { Appointment } from '@/types/entities';
+import { getClientById } from '@/services/client.service';
+import { getPetById } from '@/services/pets.service';
 import { sendTelegramMessage } from './client';
 
 type SendGroomerMessageOptions = {
@@ -78,7 +80,20 @@ export function formatNewAppointmentMessage(
 export async function notifyGroomerAboutNewAppointment(
   appointment: Appointment,
 ) {
-  const text = formatNewAppointmentMessage(appointment);
+  const [client, pet] = await Promise.all([
+    appointment.clientId ? getClientById(appointment.clientId) : null,
+    appointment.petId ? getPetById(appointment.petId) : null,
+  ]);
+  const text = formatNewAppointmentMessage({
+    ...appointment,
+    clientName: client?.name ?? appointment.clientName,
+    phone: client?.phone ?? appointment.phone,
+    telegramUsername: client?.telegramUsername ?? appointment.telegramUsername,
+    petName: pet?.name ?? appointment.petName,
+    species: pet?.species ?? appointment.species,
+    breed: pet?.breed ?? appointment.breed,
+    sex: pet?.sex ?? appointment.sex,
+  });
 
   await sendGroomerMessage(text, {
     parseMode: 'HTML',
