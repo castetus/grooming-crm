@@ -12,6 +12,12 @@ export async function sendGroomerMessage(
   options: SendGroomerMessageOptions = {},
 ) {
 
+  console.info('[telegram/admin] Preparing groomer message', {
+    hasToken: Boolean(process.env.TELEGRAM_BOT_TOKEN),
+    hasChatId: Boolean(process.env.TELEGRAM_LANA_CHAT_ID),
+    hasReplyMarkup: Boolean(options.replyMarkup),
+    replyToMessageId: options.replyParameters?.message_id,
+  });
   const token = process.env.TELEGRAM_BOT_TOKEN;
   if (!token) {
     throw new Error('TOKEN is not configured');
@@ -22,7 +28,8 @@ export async function sendGroomerMessage(
     throw new Error('TELEGRAM_LANA_CHAT_ID is not configured');
   }
 
-  return sendTelegramMessage({
+  console.info('[telegram/admin] Sending groomer message', { chatId });
+  const result = await sendTelegramMessage({
     token,
     chatId,
     text,
@@ -30,6 +37,8 @@ export async function sendGroomerMessage(
     replyMarkup: options.replyMarkup,
     replyParameters: options.replyParameters,
   });
+  console.info('[telegram/admin] Groomer message sent', { chatId });
+  return result;
 }
 
 export function formatNewAppointmentMessage(
