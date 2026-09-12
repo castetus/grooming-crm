@@ -1,3 +1,4 @@
+import '../../globals.css';
 import type { ReactNode } from 'react';
 import { notFound } from 'next/navigation';
 
@@ -20,10 +21,12 @@ export default async function SiteLayout({ children, params }: {
   if (!isLocale(locale)) notFound();
 
   return (
-    <>
-      <SiteHeader locale={locale} />
-      <div lang={locale} className="flex-1">{children}</div>
-      <SiteFooter />
-    </>
+    <html lang={locale}>
+      <body>
+        <SiteHeader locale={locale} />
+        <div lang={locale} className="flex-1">{children}</div>
+        <SiteFooter />
+      </body>
+    </html>
   );
 }

@@ -1,3 +1,4 @@
+import { pageMetadata } from '@/lib/seo/site';
 import { notFound } from 'next/navigation';
 
 import { isLocale } from '@/lib/i18n/config';
@@ -14,4 +15,10 @@ export default async function Page({ params }: {
       <h1 className="text-3xl font-semibold">{siteLabels[locale].works}</h1>
     </main>
   );
+}
+
+export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }) {
+  const { locale } = await params;
+  if (!isLocale(locale)) notFound();
+  return pageMetadata(locale, 'works');
 }

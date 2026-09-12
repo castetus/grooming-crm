@@ -1,3 +1,4 @@
+import '../globals.css';
 import { redirect } from 'next/navigation';
 import type { ReactNode } from 'react';
 
@@ -16,11 +17,15 @@ export default async function CrmLayout({ children }: { children: ReactNode }) {
   }
 
   return (
-    <div className="min-h-screen bg-muted/30 lg:grid lg:grid-cols-[256px_1fr]">
-      <CrmNavigation />
-      <main className="min-w-0 px-4 py-2 sm:px-6 lg:px-10 lg:py-10">
-        {children}
-      </main>
-    </div>
+    <html lang="ru">
+      <body>
+        <div className="min-h-screen bg-muted/30 lg:grid lg:grid-cols-[256px_1fr]">
+          <CrmNavigation />
+          <main className="min-w-0 px-4 py-2 sm:px-6 lg:px-10 lg:py-10">
+            {children}
+          </main>
+        </div>
+      </body>
+    </html>
   );
 }

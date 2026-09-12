@@ -5,6 +5,9 @@ export const siteLabels = {
     services: 'Услуги',
     contacts: 'Контакты',
     navigation: 'Основная навигация',
+    openMenu: 'Открыть меню',
+    closeMenu: 'Закрыть меню',
+    language: 'Язык',
   },
   sr: {
     home: 'Početna',
@@ -12,5 +15,8 @@ export const siteLabels = {
     services: 'Usluge',
     contacts: 'Kontakt',
     navigation: 'Glavna navigacija',
+    openMenu: 'Otvori meni',
+    closeMenu: 'Zatvori meni',
+    language: 'Jezik',
   },
 };
