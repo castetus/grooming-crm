@@ -1,0 +1,18 @@
+@theme static {
+  /* Buttons, icons and links. */
+  --color-action: #0F6E56;
+
+  /* Badge and pill backgrounds; text on dark surfaces. */
+  --color-action-soft: #E1F5EE;
+
+  /* Text on the light green booking surface. */
+  --color-booking-foreground: #04342C;
+
+  /* Main illustration color, lighter muzzle/patches and eyes. */
+  --color-illustration-primary: #C97B4A;
+  --color-illustration-highlight: #E8B896;
+  --color-illustration-detail: #3A2414;
+
+  /* Card background beneath photos. */
+  --color-photo-surface: #FAF3EC;
+}

@@ -1,3 +1,5 @@
+@reference "../../globals.css";
+
 .page {
   --background: #fafafa;
   --foreground: #fff;
@@ -14,7 +16,6 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  font-family: var(--font-geist-sans);
   background-color: var(--background);
 }
 
@@ -40,18 +41,14 @@
 
 .intro h1 {
   max-width: 320px;
-  font-size: 40px;
-  font-weight: 600;
-  line-height: 48px;
   letter-spacing: -2.4px;
   text-wrap: balance;
   color: var(--text-primary);
 }
 
 .intro p {
+  @apply typography-subtitle;
   max-width: 440px;
-  font-size: 18px;
-  line-height: 32px;
   text-wrap: balance;
   color: var(--text-secondary);
 }
@@ -67,10 +64,10 @@
   width: 100%;
   max-width: 440px;
   gap: 16px;
-  font-size: 14px;
 }
 
 .ctas a {
+  @apply typography-button;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -117,8 +114,6 @@ a.secondary {
   }
 
   .intro h1 {
-    font-size: 32px;
-    line-height: 40px;
     letter-spacing: -1.92px;
   }
 }
@@ -142,7 +137,6 @@ a.secondary {
 }
 
 .code {
-  font-family: var(--font-geist-mono);
   font-size: 0.9em;
   background: color-mix(in srgb, currentColor 8%, transparent);
   padding: 0.1em 0.4em;

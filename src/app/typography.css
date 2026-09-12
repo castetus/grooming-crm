@@ -1,0 +1,57 @@
+@theme inline {
+  --font-sans: Arial, sans-serif;
+  --font-heading: var(--font-sans);
+}
+
+@layer base {
+  html {
+    @apply font-sans;
+  }
+
+  h1 {
+    font-size: 36px;
+    font-weight: 600;
+    line-height: 1.18;
+  }
+
+  h2 {
+    font-size: 22px;
+    font-weight: 600;
+  }
+
+  @media (min-width: 768px) {
+    h2 {
+      font-size: 24px;
+    }
+  }
+}
+
+@utility typography-logo {
+  font-size: 17px;
+  font-weight: 600;
+}
+
+@utility typography-button {
+  font-size: 14px;
+  font-weight: 400;
+}
+
+@utility typography-subtitle {
+  font-size: 16px;
+  font-weight: 400;
+}
+
+@utility typography-card {
+  font-size: 14px;
+  font-weight: 400;
+}
+
+@utility typography-card-medium {
+  font-size: 14px;
+  font-weight: 500;
+}
+
+@utility typography-caption {
+  font-size: 12px;
+  font-weight: 400;
+}

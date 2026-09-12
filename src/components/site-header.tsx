@@ -32,8 +32,6 @@ export function SiteHeader({ locale = defaultLocale }: { locale?: Locale }) {
               {label}
             </Link>
           ))}
-          {/* <Link href="/">Главная</Link>
-          <Link href="/crm">CRM</Link> */}
         </nav>
         <Sheet open={menuOpen} onOpenChange={setMenuOpen}>
           <SheetTrigger render={<Button variant="ghost" size="icon-lg" className="md:hidden" aria-label={labels.openMenu} />}>
