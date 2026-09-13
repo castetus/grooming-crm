@@ -1,0 +1,5 @@
+.form :global([data-slot="label"]):has(~ [aria-required="true"])::after,
+.form fieldset[data-required="true"] > legend::after {
+  content: " *";
+  color: var(--destructive);
+}

@@ -60,7 +60,7 @@ export function SiteHeader({ locale = defaultLocale }: { locale?: Locale }) {
             setMenuOpen(false);
             router.push(`/${event.target.value}${pathname.slice(locale.length + 1)}`);
           }}
-          className="h-11 rounded-lg border border-input bg-background px-3 text-sm outline-none focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/50"
+          className="h-8 rounded-lg border border-input bg-background px-3 text-sm outline-none focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/50"
         >
           {locales.map((language) => (
             <option key={language} value={language} lang={language}>

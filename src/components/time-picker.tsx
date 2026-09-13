@@ -3,30 +3,37 @@
 import { useState } from 'react';
 
 import { cn } from '@/lib/utils';
+import { siteLabels } from '@/lib/i18n/site';
 
 export function TimePicker({
   id,
   name,
   defaultValue = '',
+  labels = siteLabels.ru.bookingForm.booking,
   required = false,
+  hoursOnly = false,
+  startHour = 0,
   after,
   onValueChange,
 }: {
   id: string;
   name: string;
   defaultValue?: string;
+  labels?: { hours: string; minutes: string };
   required?: boolean;
+  hoursOnly?: boolean;
+  startHour?: number;
   after?: string;
   onValueChange?: (value: string) => void;
 }) {
   const [defaultHours = '', defaultMinutes = ''] = defaultValue.split(':');
   const [hours, setHours] = useState(defaultHours);
-  const [minutes, setMinutes] = useState(defaultMinutes);
+  const [minutes, setMinutes] = useState(hoursOnly ? '00' : defaultMinutes);
   const value = hours && minutes ? `${hours}:${minutes}` : '';
   const [afterHours = '', afterMinutes = ''] = after?.split(':') ?? [];
 
   function updateHours(nextHours: string) {
-    let nextMinutes = minutes;
+    let nextMinutes = hoursOnly ? '00' : minutes;
 
     if (nextHours && !nextMinutes) {
       nextMinutes =
@@ -46,50 +53,52 @@ export function TimePicker({
   }
 
   return (
-    <div className='grid grid-cols-2 gap-2'>
+    <div className={cn('grid gap-2', !hoursOnly && 'grid-cols-2')}>
       <TimeSelect
         id={id}
-        aria-label='Часы'
+        aria-label={labels.hours}
         value={hours}
         required={required}
         onChange={(event) => updateHours(event.target.value)}
       >
-        <option value=''>Часы</option>
-        {Array.from({ length: 24 }, (_, hour) => String(hour).padStart(2, '0')).map((hour) => (
+        <option value=''>{labels.hours}</option>
+        {Array.from({ length: 24 - startHour }, (_, index) => String(startHour + index).padStart(2, '0')).map((hour) => (
           <option
             key={hour}
             value={hour}
             disabled={
               Boolean(afterHours) &&
               (Number(hour) < Number(afterHours) ||
-                (hour === afterHours && Number(afterMinutes) === 59))
+                (hour === afterHours && (hoursOnly || Number(afterMinutes) === 59)))
             }
           >
-            {hour}
+            {hoursOnly ? `${hour}:00` : hour}
           </option>
         ))}
       </TimeSelect>
 
-      <TimeSelect
-        id={`${id}-minutes`}
-        aria-label='Минуты'
-        value={minutes}
-        required={required}
-        onChange={(event) => updateMinutes(event.target.value)}
-      >
-        <option value=''>Минуты</option>
-        {Array.from({ length: 60 }, (_, minute) => String(minute).padStart(2, '0')).map((minute) => (
-          <option
-            key={minute}
-            value={minute}
-            disabled={
-              hours === afterHours && Boolean(afterMinutes) && Number(minute) <= Number(afterMinutes)
-            }
-          >
-            {minute}
-          </option>
-        ))}
-      </TimeSelect>
+      {!hoursOnly && (
+        <TimeSelect
+          id={`${id}-minutes`}
+          aria-label={labels.minutes}
+          value={minutes}
+          required={required}
+          onChange={(event) => updateMinutes(event.target.value)}
+        >
+          <option value=''>{labels.minutes}</option>
+          {Array.from({ length: 60 }, (_, minute) => String(minute).padStart(2, '0')).map((minute) => (
+            <option
+              key={minute}
+              value={minute}
+              disabled={
+                hours === afterHours && Boolean(afterMinutes) && Number(minute) <= Number(afterMinutes)
+              }
+            >
+              {minute}
+            </option>
+          ))}
+        </TimeSelect>
+      )}
 
       <input type='hidden' name={name} value={value} />
     </div>
