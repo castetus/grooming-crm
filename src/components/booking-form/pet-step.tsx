@@ -22,7 +22,7 @@ export function PetStep({ labels, onChange, errors }: { labels: PetStepLabels; e
   const id = useId();
 
   return (
-    <div className="space-y-5">
+    <div>
       <div className="space-y-2">
         <Label htmlFor={`${id}-name`}>{labels.name}</Label>
         <Input id={`${id}-name`} aria-required="true" aria-invalid={Boolean(errors.petName)} aria-describedby={`${id}-name-error`} name="petName" onChange={(event) => onChange({ petName: event.target.value })} type="text" autoComplete="off" />
@@ -37,6 +37,7 @@ export function PetStep({ labels, onChange, errors }: { labels: PetStepLabels; e
       <div className="space-y-2">
         <Label htmlFor={`${id}-breed`}>{labels.breed}</Label>
         <Input id={`${id}-breed`} name="breed" onChange={(event) => onChange({ breed: event.target.value })} type="text" autoComplete="off" />
+        <FieldError id={`${id}-breed-error`} />
       </div>
 
       <ChoiceButtons name="sex" required error={errors.sex} label={labels.sex} onValueChange={(sex) => onChange({ sex })} options={[

@@ -23,6 +23,7 @@ export const siteLabels = {
       },
       submit: 'Записаться',
       submitting: 'Отправляем…',
+      closeNotification: 'Закрыть уведомление',
       result: {
         idle: '',
         success: 'Заявка отправлена! Мы свяжемся с вами для подтверждения записи.',
@@ -84,6 +85,7 @@ export const siteLabels = {
       },
       submit: 'Zakaži termin',
       submitting: 'Slanje…',
+      closeNotification: 'Zatvori obaveštenje',
       result: {
         idle: '',
         success: 'Zahtev je poslat! Kontaktiraćemo vas radi potvrde termina.',

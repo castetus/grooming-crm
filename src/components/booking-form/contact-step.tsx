@@ -22,7 +22,7 @@ export function ContactStep({ labels, errors, onMethodChange }: { labels: Contac
   const [telegram, setTelegram] = useState('@');
 
   return (
-    <div className="space-y-5">
+    <div>
       <div className="space-y-2">
         <Label htmlFor={`${id}-name`}>{labels.name}</Label>
         <Input id={`${id}-name`} aria-required="true" aria-invalid={Boolean(errors.clientName)} aria-describedby={`${id}-name-error`} name="clientName" type="text" autoComplete="name" />
@@ -39,6 +39,7 @@ export function ContactStep({ labels, errors, onMethodChange }: { labels: Contac
             {labels.telegram}
           </Button>
         </div>
+        <FieldError id={`${id}-method-error`} />
       </fieldset>
 
       {method === 'phone' && (

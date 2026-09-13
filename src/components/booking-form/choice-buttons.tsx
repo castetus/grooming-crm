@@ -24,7 +24,7 @@ export function ChoiceButtons({ name, label, options, defaultValue, onValueChang
           </label>
         ))}
       </div>
-      {required && <FieldError id={errorId} message={error} />}
+      <FieldError id={errorId} message={error} />
     </fieldset>
   );
 }

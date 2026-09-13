@@ -37,7 +37,7 @@ export function BookingStep({ labels, locale, onChange, errors }: { labels: Book
     : '';
 
   return (
-    <div className="space-y-5">
+    <div>
       <ChoiceButtons name="locationType" label={labels.place} defaultValue="salon" onValueChange={(place) => onChange({ place })} options={[
         { value: 'salon', label: labels.salon },
         { value: 'home', label: labels.home },
@@ -72,11 +72,13 @@ export function BookingStep({ labels, locale, onChange, errors }: { labels: Book
       <div className="space-y-2">
         <Label htmlFor={`${id}-time`}>{labels.time}</Label>
         <TimePicker id={`${id}-time`} name="scheduledTime" labels={labels} hoursOnly startHour={13} onValueChange={(time) => onChange({ time })} />
+        <FieldError id={`${id}-time-error`} />
       </div>
 
       <div className="space-y-2">
         <Label htmlFor={`${id}-notes`}>{labels.notes}</Label>
-        <Textarea id={`${id}-notes`} name="notes" rows={4} onChange={(event) => onChange({ notes: event.target.value })} />
+        <Textarea id={`${id}-notes`} name="notes" rows={4} className="bg-white text-booking-foreground" onChange={(event) => onChange({ notes: event.target.value })} />
+        <FieldError id={`${id}-notes-error`} />
       </div>
     </div>
   );

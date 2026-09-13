@@ -15,6 +15,7 @@ import { BookingSummary, type BookingDetails } from './summary';
 import { defaultLocale, type Locale } from '@/lib/i18n/config';
 import { FieldErrorMessages } from './field-error';
 import styles from './booking-form.module.css';
+import { Notification } from '@/components/notification';
 
 export type BookingFormLabels = {
   title: string;
@@ -25,6 +26,7 @@ export type BookingFormLabels = {
   next: string;
   submit: string;
   submitting: string;
+  closeNotification: string;
   result: Record<BookingSubmissionState['status'], string>;
   pet: PetStepLabels;
   booking: BookingStepLabels;
@@ -40,21 +42,35 @@ export type BookingFormProps = {
 };
 
 export function BookingForm({ labels, submitAction, locale = defaultLocale, children, className }: BookingFormProps) {
-  const [submission, formAction, pending] = useActionState<BookingSubmissionState, FormData>(
+  const [notification, setNotification] = useState<BookingSubmissionState | null>(null);
+  const [formVersion, setFormVersion] = useState(0);
+  const [activeStep, setActiveStep] = useState(0);
+  const [errors, setErrors] = useState<FieldErrors>({});
+  const [attempted, setAttempted] = useState(false);
+  const [details, setDetails] = useState<BookingDetails>({ place: 'salon' });
+  const [, formAction, pending] = useActionState<BookingSubmissionState, FormData>(
     async (_previous: BookingSubmissionState, formData: FormData): Promise<BookingSubmissionState> => {
+      setNotification(null);
+      let result: BookingSubmissionState;
       try {
-        return await submitAction(formData);
+        result = await submitAction(formData);
       } catch {
-        return { status: 'error' };
+        result = { status: 'error' };
       }
+      if (result.status === 'success') {
+        setActiveStep(0);
+        setErrors({});
+        setAttempted(false);
+        setDetails({ place: 'salon' });
+        setFormVersion((version) => version + 1);
+      }
+      setNotification(result);
+      return result;
     },
     { status: 'idle' },
   );
-  const [activeStep, setActiveStep] = useState(0);
   const id = useId();
   const formRef = useRef<HTMLFormElement>(null);
-  const [errors, setErrors] = useState<FieldErrors>({});
-  const [attempted, setAttempted] = useState(false);
 
   function nextStep() {
     if (!formRef.current) return;
@@ -65,20 +81,16 @@ export function BookingForm({ labels, submitAction, locale = defaultLocale, chil
     setAttempted(false);
     setActiveStep(activeStep + 1);
   }
-  const [details, setDetails] = useState<BookingDetails>({ place: 'salon' });
 
   function updateDetails(values: Partial<BookingDetails>) {
     if (values.date) setErrors((previous) => ({ ...previous, scheduledDate: undefined }));
     setDetails((previous) => ({ ...previous, ...values }));
   }
 
-  if (submission.status === 'success') {
-    return <p role="status" className="rounded-xl bg-action-soft p-4 text-booking-foreground">{labels.result.success}</p>;
-  }
 
   return (
     <FieldErrorMessages.Provider value={Object.values(labels.validation)}>
-    <form ref={formRef} className={styles.form} noValidate onChange={() => {
+    <form key={formVersion} ref={formRef} className={styles.form} noValidate onChange={() => {
       if (attempted && formRef.current) {
         setErrors(validateStep(new FormData(formRef.current), activeStep, labels.validation));
       }
@@ -135,10 +147,17 @@ export function BookingForm({ labels, submitAction, locale = defaultLocale, chil
               </Button>
             )}
           </div>
-          {submission.status !== 'idle' && <p role="alert" className="text-destructive">{labels.result[submission.status]}</p>}
         </section>
       </fieldset>
     </form>
+    {notification && notification.status !== 'idle' && (
+      <Notification
+        message={labels.result[notification.status]}
+        success={notification.status === 'success'}
+        closeLabel={labels.closeNotification}
+        onClose={() => setNotification(null)}
+      />
+    )}
     </FieldErrorMessages.Provider>
   );
 }
