@@ -16,7 +16,30 @@ export default async function Page({ params }: {
   return (
     <main className="mx-auto w-full max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
       <h1>{labels.contacts}</h1>
+      <dl className="mt-6 space-y-4">
+        <div>
+          <dt className="font-semibold">{labels.contactInfo.telegram}</dt>
+          <dd>
+            <a href="https://t.me/LanaSwan" target="_blank" rel="noopener noreferrer" className="inline-flex min-h-11 items-center text-action hover:underline">
+              @LanaSwan
+            </a>
+          </dd>
+        </div>
+        <div>
+          <dt className="font-semibold">{labels.contactInfo.bookingBot}</dt>
+          <dd>
+            <a href="https://t.me/franz_fenya_grooming_bot" target="_blank" rel="noopener noreferrer" className="inline-flex min-h-11 items-center break-all text-action hover:underline">
+              @franz_fenya_grooming_bot
+            </a>
+          </dd>
+        </div>
+        <div className="space-y-1">
+          <dt className="font-semibold">{labels.contactInfo.workingHours}</dt>
+          <dd>{labels.contactInfo.byAppointment}</dd>
+        </div>
+      </dl>
       <section className="mt-6 space-y-4">
+        <dt className="font-semibold">{labels.contactInfo.address}</dt>
         <address className="not-italic">{address}</address>
         <iframe
           title={`${labels.mapTitle}: ${address}`}

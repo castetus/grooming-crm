@@ -2,6 +2,20 @@ export type PreferredLanguage = 'ru' | 'sr';
 
 export type PetSpecies = 'dog' | 'cat';
 
+export type PortfolioCase = {
+  id: string;
+  petName: string;
+  species: 'dog' | 'cat';
+  breedRu: string;
+  breedSr: string;
+  descriptionRu: string;
+  descriptionSr: string;
+  imageAfterUrl: string;
+  isPublished: boolean;
+  sortOrder?: number;
+  createdAt: string;
+};
+
 export type PetSex = 'male' | 'female';
 
 export type LocationType = 'salon' | 'mobile';

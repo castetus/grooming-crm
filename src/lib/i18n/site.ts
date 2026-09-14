@@ -2,10 +2,23 @@ export const siteLabels = {
   ru: {
     home: 'Главная',
     works: 'Наши работы',
+    portfolio: {
+      before: 'До',
+      after: 'После',
+      species: { dog: 'Собака', cat: 'Кошка' },
+      demoNotice: 'Демонстрационные данные. Фотографии работ появятся позже.',
+    },
     services: 'Услуги',
     contacts: 'Контакты',
     mapTitle: 'Наш адрес на карте',
     openInGoogleMaps: 'Открыть в Google Картах',
+    contactInfo: {
+      telegram: 'Telegram',
+      bookingBot: 'Запись через бота',
+      workingHours: 'Режим работы',
+      byAppointment: 'По предварительной записи. Дату и время согласуем с вами.',
+      address: 'Адрес'
+    },
     navigation: 'Основная навигация',
     openMenu: 'Открыть меню',
     closeMenu: 'Закрыть меню',
@@ -64,10 +77,23 @@ export const siteLabels = {
   sr: {
     home: 'Početna',
     works: 'Naši radovi',
+    portfolio: {
+      before: 'Pre',
+      after: 'Posle',
+      species: { dog: 'Pas', cat: 'Mačka' },
+      demoNotice: 'Demonstracioni podaci. Fotografije radova biće dodate kasnije.',
+    },
     services: 'Usluge',
     contacts: 'Kontakt',
     mapTitle: 'Naša adresa na mapi',
     openInGoogleMaps: 'Otvori u Google mapama',
+    contactInfo: {
+      telegram: 'Telegram',
+      bookingBot: 'Bot za zakazivanje',
+      workingHours: 'Radno vreme',
+      byAppointment: 'Po prethodnom zakazivanju. Datum i vreme dogovaramo sa vama.',
+      address: 'Adresa'
+    },
     navigation: 'Glavna navigacija',
     openMenu: 'Otvori meni',
     closeMenu: 'Zatvori meni',
