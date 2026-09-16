@@ -1,3 +1,4 @@
+import type { Specie } from '@/types/entities';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import type { ReactNode } from 'react';
@@ -169,7 +170,7 @@ function formatLanguage(language: 'ru' | 'sr') {
   return language === 'ru' ? 'Русский' : 'Сербский';
 }
 
-function formatSpecies(species: 'dog' | 'cat') {
+function formatSpecies(species: Specie) {
   return species === 'dog' ? 'Собака' : 'Кошка';
 }
 

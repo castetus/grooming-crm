@@ -1,3 +1,4 @@
+import type { Specie, Sex } from '@/types/entities';
 import { FieldError } from './field-error';
 import type { FieldErrors } from './validation';
 import type { BookingDetails } from './summary';
@@ -29,7 +30,7 @@ export function PetStep({ labels, onChange, errors }: { labels: PetStepLabels; e
         <FieldError id={`${id}-name-error`} message={errors.petName} />
       </div>
 
-      <ChoiceButtons name="species" required error={errors.species} label={labels.species} onValueChange={(species) => onChange({ species })} options={[
+      <ChoiceButtons<Specie> name="species" required error={errors.species} label={labels.species} onValueChange={(species) => onChange({ species })} options={[
         { value: 'dog', label: labels.dog },
         { value: 'cat', label: labels.cat },
       ]} />
@@ -40,7 +41,7 @@ export function PetStep({ labels, onChange, errors }: { labels: PetStepLabels; e
         <FieldError id={`${id}-breed-error`} />
       </div>
 
-      <ChoiceButtons name="sex" required error={errors.sex} label={labels.sex} onValueChange={(sex) => onChange({ sex })} options={[
+      <ChoiceButtons<Sex> name="sex" required error={errors.sex} label={labels.sex} onValueChange={(sex) => onChange({ sex })} options={[
         { value: 'male', label: labels.male },
         { value: 'female', label: labels.female },
       ]} />

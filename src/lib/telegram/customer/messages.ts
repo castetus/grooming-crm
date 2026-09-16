@@ -52,15 +52,15 @@ export function sendCustomerMessage(
 export function getBookingConfirmationMessage(
   data: BookingSessionData,
 ) {
-  const species = {
+  const species = data.species && {
     dog: 'Собака',
     cat: 'Кошка',
-  }[data.species ?? ''];
+  }[data.species];
 
-  const sex = {
+  const sex = data.sex && {
     male: 'Самец',
     female: 'Самка',
-  }[data.sex ?? ''];
+  }[data.sex];
 
   const locationType = {
     salon: 'Салон',

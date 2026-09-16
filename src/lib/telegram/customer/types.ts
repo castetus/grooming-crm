@@ -1,3 +1,4 @@
+import type { Specie, Sex } from '@/types/entities';
 export type BookingStep =
   | 'CLIENT_NAME_CONFIRM'
   | 'CLIENT_NAME'
@@ -24,9 +25,9 @@ export type BookingSessionData = {
   clientName?: string;
   phone?: string;
   petName?: string;
-  species?: string;
+  species?: Specie;
   breed?: string;
-  sex?: string;
+  sex?: Sex;
   locationType?: string;
   requestedDateTime?: string;
   time?: string;

@@ -1,11 +1,12 @@
+import type { Specie, Sex } from '@/types/entities';
 import type { Locale } from '@/lib/i18n/config';
 import type { BookingFormLabels } from './booking-form';
 
 export type BookingDetails = {
   petName?: string;
-  species?: string;
+  species?: Specie;
   breed?: string;
-  sex?: string;
+  sex?: Sex;
   place?: string;
   date?: Date;
   time?: string;
@@ -17,14 +18,14 @@ export function BookingSummary({ details, labels, locale }: {
   labels: BookingFormLabels;
   locale: Locale;
 }) {
-  const species: Record<string, string> = { dog: labels.pet.dog, cat: labels.pet.cat };
-  const sex: Record<string, string> = { male: labels.pet.male, female: labels.pet.female };
+  const species: Record<Specie, string> = { dog: labels.pet.dog, cat: labels.pet.cat };
+  const sex: Record<Sex, string> = { male: labels.pet.male, female: labels.pet.female };
   const place: Record<string, string> = { salon: labels.booking.salon, home: labels.booking.home };
   const rows = [
     { label: labels.pet.name, value: details.petName },
-    { label: labels.pet.species, value: species[details.species ?? ''] },
+    { label: labels.pet.species, value: details.species ? species[details.species] : undefined },
     { label: labels.pet.breed, value: details.breed },
-    { label: labels.pet.sex, value: sex[details.sex ?? ''] },
+    { label: labels.pet.sex, value: details.sex ? sex[details.sex] : undefined },
     { label: labels.booking.place, value: place[details.place ?? ''] },
     { label: labels.booking.date, value: details.date?.toLocaleDateString(locale) },
     { label: labels.booking.time, value: details.time },

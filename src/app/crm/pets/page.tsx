@@ -1,3 +1,4 @@
+import type { Specie } from '@/types/entities';
 import Link from 'next/link';
 
 import {
@@ -152,7 +153,7 @@ function PetDetail({ label, value }: { label: string; value: string }) {
   );
 }
 
-function formatSpecies(species: 'dog' | 'cat') {
+function formatSpecies(species: Specie) {
   return species === 'dog' ? 'Собака' : 'Кошка';
 }
 

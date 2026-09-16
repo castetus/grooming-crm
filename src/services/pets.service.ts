@@ -1,14 +1,14 @@
 import { createClient } from '@/lib/supabase/server';
-import type { Pet, PetSex, PetSpecies } from '@/types/entities';
+import type { Pet, Sex, Specie } from '@/types/entities';
 import { mapPet } from './mappers';
 
 export interface CreatePetInput {
   clientId: string;
   name: string;
-  species: PetSpecies;
+  species: Specie;
   breed?: string | null;
   birthDate?: string | null;
-  sex: PetSex;
+  sex: Sex;
   groomingPlan?: string | null;
   recommendedIntervalDays?: number | null;
   notes?: string | null;

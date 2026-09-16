@@ -1,11 +1,11 @@
 export type PreferredLanguage = 'ru' | 'sr';
 
-export type PetSpecies = 'dog' | 'cat';
+export type Specie = 'dog' | 'cat';
 
 export type PortfolioCase = {
   id: string;
   petName: string;
-  species: 'dog' | 'cat';
+  species: Specie;
   breedRu: string;
   breedSr: string;
   descriptionRu: string;
@@ -16,7 +16,7 @@ export type PortfolioCase = {
   createdAt: string;
 };
 
-export type PetSex = 'male' | 'female';
+export type Sex = 'male' | 'female';
 
 export type LocationType = 'salon' | 'mobile';
 
@@ -46,10 +46,10 @@ export type AppointmentStatus =
     id: string;
     clientId: string;
     name: string;
-    species: PetSpecies;
+    species: Specie;
     breed: string | null;
     birthDate: string | null;
-    sex: PetSex;
+    sex: Sex;
     groomingPlan: string | null;
     recommendedIntervalDays: number | null;
     notes: string | null;
@@ -81,9 +81,9 @@ export interface Appointment {
 
   petName: string | null;
   telegramUserId?: number | null;
-  species: PetSpecies | null;
+  species: Specie | null;
   breed: string | null;
-  sex: PetSex | null;
+  sex: Sex | null;
 
   groomerId: string | null;
 

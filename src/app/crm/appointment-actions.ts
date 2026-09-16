@@ -15,7 +15,7 @@ import {
   updateAppointment,
 } from '@/services/appointments.service';
 import { revalidatePath } from 'next/cache';
-import type { PetSex, PetSpecies } from '@/types/entities';
+import type { Sex, Specie } from '@/types/entities';
 import { notifyGroomerAboutNewAppointment } from '@/lib/telegram/messages';
 
 interface AppointmentRequestData {
@@ -23,9 +23,9 @@ interface AppointmentRequestData {
   phone: string | null;
   telegramUsername: string | null;
   petName: string | null;
-  species: PetSpecies | null;
+  species: Specie | null;
   breed: string | null;
-  sex: PetSex | null;
+  sex: Sex | null;
 }
 
 export async function getAppointmentFormOptions() {

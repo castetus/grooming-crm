@@ -1,14 +1,14 @@
 import { useId } from 'react';
 import { FieldError } from './field-error';
 
-export function ChoiceButtons({ name, label, options, defaultValue, onValueChange, error, required = false }: {
+export function ChoiceButtons<Value extends string>({ name, label, options, defaultValue, onValueChange, error, required = false }: {
   name: string;
   error?: string;
   required?: boolean;
-  onValueChange?: (value: string) => void;
-  defaultValue?: string;
+  onValueChange?: (value: Value) => void;
+  defaultValue?: Value;
   label: string;
-  options: { value: string; label: string }[];
+  options: { value: Value; label: string }[];
 }) {
   const errorId = useId();
   return (
