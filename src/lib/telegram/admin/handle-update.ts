@@ -5,7 +5,7 @@ import type { AdminTelegramUpdate } from './types';
 export async function handleAdminTelegramUpdate(update: AdminTelegramUpdate) {
   const callback = update.callback_query;
   const message = callback?.message ?? update.message;
-  if (!message) return;
+  if (!message) {return;}
 
   const lanaChatId = process.env.TELEGRAM_LANA_CHAT_ID;
   if (!lanaChatId) {
@@ -13,11 +13,11 @@ export async function handleAdminTelegramUpdate(update: AdminTelegramUpdate) {
   }
 
   const sender = callback?.from ?? message.from;
-  if (String(message.chat.id) !== lanaChatId || String(sender?.id) !== lanaChatId) return;
+  if (String(message.chat.id) !== lanaChatId || String(sender?.id) !== lanaChatId) {return;}
 
   if (callback) {
     const token = process.env.TELEGRAM_BOT_TOKEN;
-    if (!token) throw new Error('TOKEN is not configured');
+    if (!token) {throw new Error('TOKEN is not configured');}
     await answerTelegramCallbackQuery(token, callback.id);
     await handleCreateClientCallback(callback);
     return;

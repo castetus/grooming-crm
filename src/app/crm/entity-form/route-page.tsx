@@ -8,12 +8,20 @@ import { getClientsForSelect } from '../pets/actions';
 import { EntityFormPage } from './form-page';
 import { searchValue, type EntityFormType, type FormSearchParams } from './routes';
 
-export async function EntityRoutePage({ type, id, query }: { type: EntityFormType; id?: string; query: FormSearchParams }) {
+export async function EntityRoutePage({
+  type,
+  id,
+  query,
+}: {
+  type: EntityFormType;
+  id?: string;
+  query: FormSearchParams;
+}) {
   const client = type === 'client' && id ? await getClientById(id) : undefined;
   const pet = type === 'pet' && id ? await getPetById(id) : undefined;
   const groomingService = type === 'grooming-service' && id ? await getGroomingServiceById(id) : undefined;
   const appointment = type === 'appointment' && id ? await getAppointmentById(id) : undefined;
-  if (id && !client && !pet && !groomingService && !appointment) notFound();
+  if (id && !client && !pet && !groomingService && !appointment) {notFound();}
   const [options, clients] = await Promise.all([
     type === 'appointment' ? getAppointmentFormOptions() : undefined,
     type === 'pet' ? getClientsForSelect() : undefined,

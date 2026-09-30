@@ -25,7 +25,7 @@ export async function getClients(): Promise<Client[]> {
     .is('archived_at', null)
     .order('name');
 
-  if (error) throw error;
+  if (error) {throw error;}
 
   return data.map(mapClient);
 }
@@ -39,7 +39,7 @@ export async function getClientById(id: string): Promise<Client | null> {
     .eq('id', id)
     .maybeSingle();
 
-  if (error) throw error;
+  if (error) {throw error;}
 
   return data ? mapClient(data) : null;
 }
@@ -55,7 +55,7 @@ export async function getClientByTelegramUserId(
     .eq('telegram_user_id', telegramUserId)
     .maybeSingle();
 
-  if (error) throw error;
+  if (error) {throw error;}
 
   return data ? mapClient(data) : null;
 }
@@ -81,7 +81,7 @@ export async function createClientEntity(
     .select()
     .single();
 
-  if (error) throw error;
+  if (error) {throw error;}
 
   return mapClient(data);
 }
@@ -94,8 +94,8 @@ export async function updateClient(
 
   const payload: Record<string, unknown> = {};
 
-  if (input.name !== undefined) payload.name = input.name;
-  if (input.phone !== undefined) payload.phone = input.phone;
+  if (input.name !== undefined) {payload.name = input.name;}
+  if (input.phone !== undefined) {payload.phone = input.phone;}
   if (input.telegramUsername !== undefined) {
     payload.telegram_username = input.telegramUsername;
   }
@@ -108,8 +108,8 @@ export async function updateClient(
   if (input.preferredLanguage !== undefined) {
     payload.preferred_language = input.preferredLanguage;
   }
-  if (input.address !== undefined) payload.address = input.address;
-  if (input.notes !== undefined) payload.notes = input.notes;
+  if (input.address !== undefined) {payload.address = input.address;}
+  if (input.notes !== undefined) {payload.notes = input.notes;}
 
   const { data, error } = await supabase
     .from('clients')
@@ -118,7 +118,7 @@ export async function updateClient(
     .select()
     .single();
 
-  if (error) throw error;
+  if (error) {throw error;}
 
   return mapClient(data);
 }
@@ -130,7 +130,7 @@ export async function archiveClient(id: string): Promise<void> {
     target_client_id: id,
   });
 
-  if (error) throw error;
+  if (error) {throw error;}
 }
 
 export async function restoreClient(id: string): Promise<Client> {
@@ -145,7 +145,7 @@ export async function restoreClient(id: string): Promise<Client> {
     .select()
     .single();
 
-  if (error) throw error;
+  if (error) {throw error;}
 
   return mapClient(data);
 }
@@ -159,7 +159,7 @@ export async function getArchivedClients(): Promise<Client[]> {
     .not('archived_at', 'is', null)
     .order('name');
 
-  if (error) throw error;
+  if (error) {throw error;}
 
   return data.map(mapClient);
 }
@@ -178,15 +178,15 @@ export async function searchClients(
   const pattern = `%${normalizedQuery}%`;
 
   const { data, error } = await supabase
-    .from("clients")
-    .select("*")
-    .is("archived_at", null)
+    .from('clients')
+    .select('*')
+    .is('archived_at', null)
     .or(
       `name.ilike.${pattern},phone.ilike.${pattern},telegram_username.ilike.${pattern}`,
     )
-    .order("name");
+    .order('name');
 
-  if (error) throw error;
+  if (error) {throw error;}
 
   return data.map(mapClient);
 }

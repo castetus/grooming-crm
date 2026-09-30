@@ -69,7 +69,15 @@ export function ClientFields({
   );
 }
 
-export function PetFields({ formId, clientId, clients, pet, hideClientSelection = false, onCreateClient, embedded = false }: {
+export function PetFields({
+  formId,
+  clientId,
+  clients,
+  pet,
+  hideClientSelection = false,
+  onCreateClient,
+  embedded = false,
+}: {
   formId: string;
   embedded?: boolean;
   clientId?: string;
@@ -86,7 +94,13 @@ export function PetFields({ formId, clientId, clients, pet, hideClientSelection 
       {hideClientSelection ? <input type='hidden' name={fieldName('clientId')} value={clientId} /> : (
         <>
           <FormField id={`${formId}-client`} label='Клиент' required>
-            <ClientSelect key={`${clientId}-${clients?.length ?? 0}`} id={`${formId}-client`} clients={clients} defaultClientId={clientId} disabled={Boolean(pet)} />
+            <ClientSelect
+              key={`${clientId}-${clients?.length ?? 0}`}
+              id={`${formId}-client`}
+              clients={clients}
+              defaultClientId={clientId}
+              disabled={Boolean(pet)}
+            />
             {!pet && onCreateClient && <Button type="button" variant="outline" className="mt-2 w-full" onClick={onCreateClient}>Создать нового клиента</Button>}
           </FormField>
         </>
@@ -107,7 +121,17 @@ export function PetFields({ formId, clientId, clients, pet, hideClientSelection 
   );
 }
 
-function ClientSelect({ id, clients, defaultClientId, disabled = false }: { id: string; clients?: ClientOption[]; defaultClientId?: string; disabled?: boolean }) {
+function ClientSelect({
+  id,
+  clients,
+  defaultClientId,
+  disabled = false,
+}: {
+  id: string;
+  clients?: ClientOption[];
+  defaultClientId?: string;
+  disabled?: boolean;
+}) {
   const initialClient = clients?.find((client) => client.id === defaultClientId);
   const [query, setQuery] = useState(initialClient ? formatClientOption(initialClient) : '');
   const [selectedClientId, setSelectedClientId] = useState(initialClient?.id ?? '');

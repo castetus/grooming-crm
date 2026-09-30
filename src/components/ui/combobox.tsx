@@ -125,7 +125,7 @@ function ComboboxList({ className, ...props }: ComboboxPrimitive.List.Props) {
       data-slot="combobox-list"
       className={cn(
         'no-scrollbar max-h-[min(calc(--spacing(72)---spacing(9)),calc(var(--available-height)---spacing(9)))] scroll-py-1 overflow-y-auto overscroll-contain p-1 data-empty:p-0',
-        className
+        className,
       )}
       {...props}
     />
@@ -142,7 +142,7 @@ function ComboboxItem({
       data-slot="combobox-item"
       className={cn(
         "relative flex w-full cursor-default items-center gap-2.5 rounded-xl py-2 pr-8 pl-3 text-sm outline-hidden select-none data-highlighted:bg-accent data-highlighted:text-accent-foreground not-data-[variant=destructive]:data-highlighted:**:text-accent-foreground data-disabled:pointer-events-none data-disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
-        className
+        className,
       )}
       {...props}
     >
@@ -193,7 +193,7 @@ function ComboboxEmpty({ className, ...props }: ComboboxPrimitive.Empty.Props) {
       data-slot="combobox-empty"
       className={cn(
         'hidden w-full justify-center py-2 text-center text-sm text-muted-foreground group-data-empty/combobox-content:flex',
-        className
+        className,
       )}
       {...props}
     />
@@ -223,7 +223,7 @@ function ComboboxChips({
       data-slot="combobox-chips"
       className={cn(
         'flex min-h-9 flex-wrap items-center gap-1.5 rounded-4xl border border-input bg-input/30 bg-clip-padding px-2.5 py-1.5 text-sm transition-colors focus-within:border-ring focus-within:ring-[3px] focus-within:ring-ring/50 has-aria-invalid:border-destructive has-aria-invalid:ring-[3px] has-aria-invalid:ring-destructive/20 has-data-[slot=combobox-chip]:px-1.5 dark:has-aria-invalid:border-destructive/50 dark:has-aria-invalid:ring-destructive/40',
-        className
+        className,
       )}
       {...props}
     />
@@ -243,7 +243,7 @@ function ComboboxChip({
       data-slot="combobox-chip"
       className={cn(
         'flex h-[calc(--spacing(5.5))] w-fit items-center justify-center gap-1 rounded-4xl bg-muted-foreground/10 px-2 text-xs font-medium whitespace-nowrap text-foreground has-disabled:pointer-events-none has-disabled:cursor-not-allowed has-disabled:opacity-50 has-data-[slot=combobox-chip-remove]:pr-0',
-        className
+        className,
       )}
       {...props}
     >

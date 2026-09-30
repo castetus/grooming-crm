@@ -7,7 +7,7 @@ import { SitePageProps } from '../types';
 
 export default async function Page({ params }: SitePageProps) {
   const { locale } = await params;
-  if (!isLocale(locale)) notFound();
+  if (!isLocale(locale)) {notFound();}
 
   return (
     <main className="mx-auto w-full max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
@@ -18,6 +18,6 @@ export default async function Page({ params }: SitePageProps) {
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
-  if (!isLocale(locale)) notFound();
+  if (!isLocale(locale)) {notFound();}
   return pageMetadata(locale, 'services');
 }

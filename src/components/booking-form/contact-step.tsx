@@ -15,7 +15,15 @@ export type ContactStepLabels = {
   telegramHint: string;
 };
 
-export function ContactStep({ labels, errors, onMethodChange }: { labels: ContactStepLabels; errors: FieldErrors; onMethodChange: () => void }) {
+export function ContactStep({
+  labels,
+  errors,
+  onMethodChange,
+}: {
+  labels: ContactStepLabels;
+  errors: FieldErrors;
+  onMethodChange: () => void;
+}) {
   const id = useId();
   const [method, setMethod] = useState<'phone' | 'telegram'>('phone');
   const [phone, setPhone] = useState('+381');

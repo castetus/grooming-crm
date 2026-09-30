@@ -167,7 +167,7 @@ export type CreatePendingAppointmentInput = Omit<
 };
 
 export type UpdateAppointmentInput = Partial<
-  Omit<CreateAppointmentInput, "status">
+  Omit<CreateAppointmentInput, 'status'>
 >;
 
 export interface CompleteAppointmentInput {

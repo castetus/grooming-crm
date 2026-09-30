@@ -5,8 +5,8 @@ import { CompletionForm } from './completion-form';
 
 export default async function Page({ searchParams }: { searchParams: Promise<FormSearchParams> }) {
   const id = searchValue(await searchParams, 'appointmentId');
-  if (!id) notFound();
+  if (!id) {notFound();}
   const appointment = await getAppointmentById(id);
-  if (!appointment || appointment.status !== 'confirmed') notFound();
+  if (!appointment || appointment.status !== 'confirmed') {notFound();}
   return <CompletionForm appointment={appointment} />;
 }

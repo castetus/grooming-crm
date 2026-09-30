@@ -312,7 +312,7 @@ export async function handleBookingCallback(
     data.startsWith('species:')
   ) {
     const species = data.split(':')[1];
-    if (species !== 'dog' && species !== 'cat') return;
+    if (species !== 'dog' && species !== 'cat') {return;}
 
     await updateBookingSession(telegramUserId, {
       step: 'BREED',
@@ -335,7 +335,7 @@ export async function handleBookingCallback(
     data.startsWith('sex:')
   ) {
     const sex = data.split(':')[1];
-    if (sex !== 'male' && sex !== 'female') return;
+    if (sex !== 'male' && sex !== 'female') {return;}
 
     await updateBookingSession(telegramUserId, {
       step: 'DATE',

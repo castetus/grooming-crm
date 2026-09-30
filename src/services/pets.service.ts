@@ -25,7 +25,7 @@ export async function getPets(): Promise<Pet[]> {
     .is('archived_at', null)
     .order('name');
 
-  if (error) throw error;
+  if (error) {throw error;}
 
   return data.map(mapPet);
 }
@@ -39,7 +39,7 @@ export async function getPetById(id: string): Promise<Pet | null> {
     .eq('id', id)
     .maybeSingle();
 
-  if (error) throw error;
+  if (error) {throw error;}
 
   return data ? mapPet(data) : null;
 }
@@ -53,7 +53,7 @@ export async function getPetsByClientId(clientId: string): Promise<Pet[]> {
     .eq('client_id', clientId)
     .order('name');
 
-  if (error) throw error;
+  if (error) {throw error;}
 
   return data.map(mapPet);
 }
@@ -77,7 +77,7 @@ export async function createPet(input: CreatePetInput): Promise<Pet> {
     .select()
     .single();
 
-  if (error) throw error;
+  if (error) {throw error;}
 
   return mapPet(data);
 }
@@ -90,18 +90,18 @@ export async function updatePet(
 
   const payload: Record<string, unknown> = {};
 
-  if (input.name !== undefined) payload.name = input.name;
-  if (input.species !== undefined) payload.species = input.species;
-  if (input.breed !== undefined) payload.breed = input.breed;
-  if (input.birthDate !== undefined) payload.birth_date = input.birthDate;
-  if (input.sex !== undefined) payload.sex = input.sex;
+  if (input.name !== undefined) {payload.name = input.name;}
+  if (input.species !== undefined) {payload.species = input.species;}
+  if (input.breed !== undefined) {payload.breed = input.breed;}
+  if (input.birthDate !== undefined) {payload.birth_date = input.birthDate;}
+  if (input.sex !== undefined) {payload.sex = input.sex;}
   if (input.groomingPlan !== undefined) {
     payload.grooming_plan = input.groomingPlan;
   }
   if (input.recommendedIntervalDays !== undefined) {
     payload.recommended_interval_days = input.recommendedIntervalDays;
   }
-  if (input.notes !== undefined) payload.notes = input.notes;
+  if (input.notes !== undefined) {payload.notes = input.notes;}
 
   const { data, error } = await supabase
     .from('pets')
@@ -110,7 +110,7 @@ export async function updatePet(
     .select()
     .single();
 
-  if (error) throw error;
+  if (error) {throw error;}
 
   return mapPet(data);
 }
@@ -127,7 +127,7 @@ export async function archivePet(id: string): Promise<Pet> {
     .select()
     .single();
 
-  if (error) throw error;
+  if (error) {throw error;}
 
   return mapPet(data);
 }
@@ -144,7 +144,7 @@ export async function restorePet(id: string): Promise<Pet> {
     .select()
     .single();
 
-  if (error) throw error;
+  if (error) {throw error;}
 
   return mapPet(data);
 }
@@ -158,7 +158,7 @@ export async function getArchivedPets(): Promise<Pet[]> {
     .not('archived_at', 'is', null)
     .order('name');
 
-  if (error) throw error;
+  if (error) {throw error;}
 
   return data.map(mapPet);
 }
@@ -175,13 +175,13 @@ export async function searchPets(
   }
 
   const { data, error } = await supabase
-    .from("pets")
-    .select("*")
-    .is("archived_at", null)
-    .ilike("name", `%${normalizedQuery}%`)
-    .order("name");
+    .from('pets')
+    .select('*')
+    .is('archived_at', null)
+    .ilike('name', `%${normalizedQuery}%`)
+    .order('name');
 
-  if (error) throw error;
+  if (error) {throw error;}
 
   return data.map(mapPet);
 }

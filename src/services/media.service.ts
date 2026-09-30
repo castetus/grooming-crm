@@ -1,8 +1,8 @@
 // src/services/media.service.ts
 
-import { createClient } from "@/lib/supabase/server";
+import { createClient } from '@/lib/supabase/server';
 
-const BUCKET = "grooming-media";
+const BUCKET = 'grooming-media';
 
 export async function uploadPetPhoto(
   petId: string,
@@ -20,7 +20,7 @@ export async function uploadPetPhoto(
       contentType: file.type,
     });
 
-  if (error) throw error;
+  if (error) {throw error;}
 
   return path;
 }
@@ -41,7 +41,7 @@ export async function uploadGroomingPhoto(
       contentType: file.type,
     });
 
-  if (error) throw error;
+  if (error) {throw error;}
 
   return path;
 }
@@ -53,11 +53,11 @@ export async function deleteMedia(path: string): Promise<void> {
     .from(BUCKET)
     .remove([path]);
 
-  if (error) throw error;
+  if (error) {throw error;}
 }
 
 export async function deleteMediaFiles(paths: string[]): Promise<void> {
-  if (!paths.length) return;
+  if (!paths.length) {return;}
 
   const supabase = await createClient();
 
@@ -65,7 +65,7 @@ export async function deleteMediaFiles(paths: string[]): Promise<void> {
     .from(BUCKET)
     .remove(paths);
 
-  if (error) throw error;
+  if (error) {throw error;}
 }
 
 export async function getMediaUrl(path: string): Promise<string> {
@@ -79,7 +79,7 @@ export async function getMediaUrl(path: string): Promise<string> {
 }
 
 function getFileExtension(file: File): string {
-  return file.name.split(".").pop()?.toLowerCase() || "jpg";
+  return file.name.split('.').pop()?.toLowerCase() || 'jpg';
 }
 
 export async function setPetPhoto(
@@ -91,13 +91,13 @@ export async function setPetPhoto(
   const supabase = await createClient();
 
   const { error } = await supabase
-    .from("pets")
+    .from('pets')
     .update({
       photo_path: path,
     })
-    .eq("id", petId);
+    .eq('id', petId);
 
-  if (error) throw error;
+  if (error) {throw error;}
 
   return path;
 }

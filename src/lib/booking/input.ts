@@ -34,7 +34,7 @@ export function bookingInput(formData: FormData, now = new Date()): CreatePendin
   const offset = new Intl.DateTimeFormat('en', {
     timeZone: 'Europe/Belgrade', timeZoneName: 'longOffset',
   }).formatToParts(probe).find((part) => part.type === 'timeZoneName')?.value.replace('GMT', '');
-  if (!offset) return null;
+  if (!offset) {return null;}
   const start = new Date(`${date}T${time}:00${offset}`);
 
   return {

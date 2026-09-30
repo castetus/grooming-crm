@@ -32,7 +32,7 @@ export function BookingSummary({ details, labels, locale }: {
     { label: labels.booking.notes, value: details.notes },
   ].filter(({ value }) => value?.trim());
 
-  if (!rows.length) return null;
+  if (!rows.length) {return null;}
 
   return (
     <section className="mt-6 space-y-4 border-t pt-6">

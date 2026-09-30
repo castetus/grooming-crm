@@ -18,10 +18,15 @@ export function InlineEntityForm({ type, formId, clientId, onSave, onCancel }: {
   async function save() {
     const fieldset = ref.current;
     const form = fieldset?.form;
-    if (!fieldset || !form || pending) return;
+    if (!fieldset || !form || pending) {return;}
 
     for (const control of fieldset.querySelectorAll('input, select, textarea')) {
-      if ((control instanceof HTMLInputElement || control instanceof HTMLSelectElement || control instanceof HTMLTextAreaElement) && !control.reportValidity()) return;
+      if (
+        (control instanceof HTMLInputElement ||
+          control instanceof HTMLSelectElement ||
+          control instanceof HTMLTextAreaElement) &&
+        !control.reportValidity()
+      ) {return;}
     }
 
     const prefix = type === 'client' ? 'newClient' : 'newPet';

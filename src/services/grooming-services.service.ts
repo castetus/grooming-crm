@@ -21,7 +21,7 @@ export async function getGroomingServices(): Promise<GroomingService[]> {
     .select('*')
     .order('name');
 
-  if (error) throw error;
+  if (error) {throw error;}
 
   return data.map(mapGroomingService);
 }
@@ -35,7 +35,7 @@ export async function getActiveGroomingServices(): Promise<GroomingService[]> {
     .eq('active', true)
     .order('name');
 
-  if (error) throw error;
+  if (error) {throw error;}
 
   return data.map(mapGroomingService);
 }
@@ -51,7 +51,7 @@ export async function getGroomingServiceById(
     .eq('id', id)
     .maybeSingle();
 
-  if (error) throw error;
+  if (error) {throw error;}
 
   return data ? mapGroomingService(data) : null;
 }
@@ -73,7 +73,7 @@ export async function createGroomingService(
     .select()
     .single();
 
-  if (error) throw error;
+  if (error) {throw error;}
 
   return mapGroomingService(data);
 }
@@ -86,7 +86,7 @@ export async function updateGroomingService(
 
   const payload: Record<string, unknown> = {};
 
-  if (input.name !== undefined) payload.name = input.name;
+  if (input.name !== undefined) {payload.name = input.name;}
   if (input.description !== undefined) {
     payload.description = input.description;
   }
@@ -107,7 +107,7 @@ export async function updateGroomingService(
     .select()
     .single();
 
-  if (error) throw error;
+  if (error) {throw error;}
 
   return mapGroomingService(data);
 }
@@ -120,7 +120,7 @@ export async function deleteGroomingService(id: string): Promise<void> {
     .delete()
     .eq('id', id);
 
-  if (error) throw error;
+  if (error) {throw error;}
 }
 
 export async function archiveGroomingService(id: string): Promise<GroomingService> {

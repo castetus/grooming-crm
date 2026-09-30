@@ -6,7 +6,7 @@ import type { AdminTelegramCallback, AdminTelegramMessage } from './types';
 
 function appointmentReplyMarkup(clientId: string) {
   const baseUrl = process.env.APP_URL;
-  if (!baseUrl) throw new Error('APP_URL is not configured');
+  if (!baseUrl) {throw new Error('APP_URL is not configured');}
 
   const url = new URL('/crm/appointments/new', baseUrl);
   url.searchParams.set('clientId', clientId);
@@ -63,7 +63,7 @@ export async function handleForwardedMessage(message: AdminTelegramMessage) {
 
 export async function handleCreateClientCallback(callback: AdminTelegramCallback) {
   const match = callback.data?.match(/^client:create:(\d+)$/);
-  if (!match) return;
+  if (!match) {return;}
 
   const telegramUserId = Number(match[1]);
   const database = createAdminClient();

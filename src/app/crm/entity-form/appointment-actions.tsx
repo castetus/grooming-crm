@@ -20,22 +20,28 @@ const statusActionCopy: Record<StatusAction, { title: string; description: strin
   restore: { title: 'Восстановить запись?', description: 'Запись снова получит статус «Подтверждена».', label: 'Восстановить' },
 };
 
-export function AppointmentActions({ appointment, onStatusChanged }: { appointment: Appointment; onStatusChanged: () => void }) {
+export function AppointmentActions({
+  appointment,
+  onStatusChanged,
+}: {
+  appointment: Appointment;
+  onStatusChanged: () => void;
+}) {
   const [statusAction, setStatusAction] = useState<StatusAction>();
   const [isPending, startTransition] = useTransition();
 
   function applyStatusChange() {
-    if (!statusAction) return;
+    if (!statusAction) {return;}
 
     startTransition(async () => {
-      if (statusAction === 'cancel') await cancelAppointmentAction(appointment.id);
-      if (statusAction === 'restore') await restoreAppointmentAction(appointment.id);
+      if (statusAction === 'cancel') {await cancelAppointmentAction(appointment.id);}
+      if (statusAction === 'restore') {await restoreAppointmentAction(appointment.id);}
       setStatusAction(undefined);
       onStatusChanged();
     });
   }
 
-  if (appointment.status === 'completed') return null;
+  if (appointment.status === 'completed') {return null;}
 
   return <>
     <div className='space-y-3 border-t pt-6'>
@@ -44,11 +50,28 @@ export function AppointmentActions({ appointment, onStatusChanged }: { appointme
       {appointment.status === 'confirmed' && <div className='grid grid-cols-2 gap-3'><Link href={`/crm/history/new?appointmentId=${encodeURIComponent(appointment.id)}`} className={buttonVariants()}>Завершить</Link><Button type='button' variant='destructive' onClick={() => setStatusAction('cancel')}>Отменить</Button></div>}
       {appointment.status === 'cancelled' && <Button type='button' className='w-full' onClick={() => setStatusAction('restore')}>Восстановить</Button>}
     </div>
-    <StatusConfirmationDialog action={statusAction} pending={isPending} onOpenChange={(open) => { if (!open && !isPending) setStatusAction(undefined); }} onConfirm={applyStatusChange} />
+    <StatusConfirmationDialog
+      action={statusAction}
+      pending={isPending}
+      onOpenChange={(open) => {
+        if (!open && !isPending) {setStatusAction(undefined);}
+      }}
+      onConfirm={applyStatusChange}
+    />
   </>;
 }
 
-function StatusConfirmationDialog({ action, pending, onOpenChange, onConfirm }: { action?: StatusAction; pending: boolean; onOpenChange: (open: boolean) => void; onConfirm: () => void }) {
+function StatusConfirmationDialog({
+  action,
+  pending,
+  onOpenChange,
+  onConfirm,
+}: {
+  action?: StatusAction;
+  pending: boolean;
+  onOpenChange: (open: boolean) => void;
+  onConfirm: () => void;
+}) {
   const copy = action ? statusActionCopy[action] : undefined;
 
   return <Dialog.Root open={Boolean(action)} onOpenChange={onOpenChange}><Dialog.Portal>

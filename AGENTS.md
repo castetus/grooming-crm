@@ -15,10 +15,12 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 ### 2. Don't write any code if it's not nesessary
 ### 3. Don't remove any comments, console.logs etc. was written by me
 ### 4. Try to keep code clean, avoid unnesessary checks
+### 5. For any case, search repeating patterns and existing solutions, try to apply them first
 
 ## TypeScript
 ### 1. Don't use any
 ### 2. Avoid assertions
+### 3. Extract repeating types to named types
 
 ## Codestyle and linting
 ### In TS use only `''`, in TSX use `""`

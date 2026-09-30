@@ -99,7 +99,7 @@ export function AppointmentFields({
   const clientCreatedInForm = createdClientId === selectedClientId;
 
   useEffect(() => {
-    if (!scrollAfterSave.current || inlineForm) return;
+    if (!scrollAfterSave.current || inlineForm) {return;}
 
     const frame = requestAnimationFrame(() => {
       const section = appointmentDetailsRef.current ?? petSectionRef.current;
@@ -141,7 +141,7 @@ export function AppointmentFields({
   }
 
   async function createFromRequest(entity: 'client' | 'pet') {
-    if (!appointment) return;
+    if (!appointment) {return;}
 
     setCreatingFromRequest(true);
     setRequestCreationError('');
@@ -317,7 +317,10 @@ export function AppointmentFields({
           type="button"
           variant="outline"
           className="w-full"
-          disabled={Boolean(inlineForm) || creatingFromRequest || !selectedClientId || !appointment?.petName || !appointment.species || !appointment.sex}
+          disabled={
+            Boolean(inlineForm) || creatingFromRequest || !selectedClientId ||
+            !appointment?.petName || !appointment.species || !appointment.sex
+          }
           onClick={() => createFromRequest('pet')}
         >
           Создать питомца из данных заявки

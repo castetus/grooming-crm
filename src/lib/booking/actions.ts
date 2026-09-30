@@ -6,7 +6,7 @@ import { bookingInput } from './input';
 
 export async function submitBooking(formData: FormData): Promise<BookingSubmissionState> {
   const input = bookingInput(formData);
-  if (!input) return { status: 'invalid' };
+  if (!input) {return { status: 'invalid' };}
 
   try {
     await createPendingAppointment(input);

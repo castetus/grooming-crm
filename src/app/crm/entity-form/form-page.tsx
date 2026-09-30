@@ -16,7 +16,19 @@ import { AppointmentActions } from './appointment-actions';
 import { ClientFields, PetFields, GroomingServiceFields, type ClientOption } from './entity-fields';
 import { entityPaths, safeReturnTo, type EntityFormType } from './routes';
 
-export function EntityFormPage({ type, client, pet, groomingService, appointment, initialOptions, clients, appointmentDate, defaultClientId, defaultPetId, returnTo }: {
+export function EntityFormPage({
+  type,
+  client,
+  pet,
+  groomingService,
+  appointment,
+  initialOptions,
+  clients,
+  appointmentDate,
+  defaultClientId,
+  defaultPetId,
+  returnTo,
+}: {
   type: EntityFormType;
   client?: Client;
   pet?: Pet;
@@ -47,8 +59,8 @@ export function EntityFormPage({ type, client, pet, groomingService, appointment
     if (destination && id && (type === 'client' || type === 'pet')) {
       const url = new URL(destination, window.location.origin);
       url.searchParams.set(type === 'client' ? 'clientId' : 'petId', id);
-      if (type === 'client') url.searchParams.delete('petId');
-      if (type === 'pet' && clientId) url.searchParams.set('clientId', clientId);
+      if (type === 'client') {url.searchParams.delete('petId');}
+      if (type === 'pet' && clientId) {url.searchParams.set('clientId', clientId);}
       router.push(`${url.pathname}${url.search}`);
     } else {
       router.push(backHref);
@@ -58,12 +70,12 @@ export function EntityFormPage({ type, client, pet, groomingService, appointment
 
   function openRelatedForm(entity: 'client' | 'pet', selectedClientId?: string) {
     const back = new URL(pathname, window.location.origin);
-    if (appointmentDate) back.searchParams.set('date', appointmentDate);
-    if (clientId) back.searchParams.set('clientId', clientId);
-    if (petId) back.searchParams.set('petId', petId);
-    if (safeReturnTo(returnTo)) back.searchParams.set('returnTo', returnTo ?? '');
+    if (appointmentDate) {back.searchParams.set('date', appointmentDate);}
+    if (clientId) {back.searchParams.set('clientId', clientId);}
+    if (petId) {back.searchParams.set('petId', petId);}
+    if (safeReturnTo(returnTo)) {back.searchParams.set('returnTo', returnTo ?? '');}
     const query = new URLSearchParams({ returnTo: `${back.pathname}${back.search}` });
-    if (selectedClientId) query.set('clientId', selectedClientId);
+    if (selectedClientId) {query.set('clientId', selectedClientId);}
     router.push(`${entityPaths[entity]}/new?${query}`);
   }
 
@@ -73,21 +85,21 @@ export function EntityFormPage({ type, client, pet, groomingService, appointment
     try {
       let createdId: string | undefined;
       if (type === 'client') {
-        if (client) await updateClientAction(client.id, formData);
-        else createdId = (await createClientAction(formData)).clientId;
+        if (client) {await updateClientAction(client.id, formData);}
+        else {createdId = (await createClientAction(formData)).clientId;}
       } else if (type === 'pet') {
-        if (pet) await updatePetAction(pet.id, formData);
-        else createdId = (await createPetAction(formData)).petId;
+        if (pet) {await updatePetAction(pet.id, formData);}
+        else {createdId = (await createPetAction(formData)).petId;}
       } else if (type === 'grooming-service') {
-        if (groomingService) await updateGroomingServiceAction(groomingService.id, formData);
-        else await createGroomingServiceAction(formData);
+        if (groomingService) {await updateGroomingServiceAction(groomingService.id, formData);}
+        else {await createGroomingServiceAction(formData);}
       } else if (!appointment) {
         await createAppointmentAction(formData);
       } else if (appointment.status === 'pending' && (!appointment.clientId || !appointment.petId)) {
         await resolvePendingAppointmentAction(appointment.id, formData);
       } else {
         await updateAppointmentAction(appointment.id, formData);
-        if (appointment.status === 'pending') await confirmAppointmentAction(appointment.id);
+        if (appointment.status === 'pending') {await confirmAppointmentAction(appointment.id);}
       }
       finish(createdId);
     } catch (error) {
@@ -112,7 +124,7 @@ export function EntityFormPage({ type, client, pet, groomingService, appointment
         </Link>
         <h1 className="min-w-0 text-2xl font-semibold">{editing ? 'Редактирование' : 'Создание'}: {titles[type]}</h1>
       </div>
-      <form action={handleAction} onSubmit={(event) => { if (inlineFormOpen) event.preventDefault(); }} autoComplete="off" className="space-y-6 rounded-xl border bg-card p-4 sm:p-6">
+      <form action={handleAction} onSubmit={(event) => { if (inlineFormOpen) {event.preventDefault();} }} autoComplete="off" className="space-y-6 rounded-xl border bg-card p-4 sm:p-6">
         <fieldset disabled={pending} className="min-w-0 space-y-5">
           {type === 'client' && <ClientFields formId={formId} client={client} />}
           {type === 'pet' && <PetFields formId={formId} clientId={pet?.clientId ?? clientId} clients={clients} pet={pet} onCreateClient={() => openRelatedForm('client')} />}

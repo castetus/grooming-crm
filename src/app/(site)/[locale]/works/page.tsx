@@ -9,7 +9,7 @@ import { SitePageProps } from '../types';
 
 export default async function Page({ params }: SitePageProps) {
   const { locale } = await params;
-  if (!isLocale(locale)) notFound();
+  if (!isLocale(locale)) {notFound();}
   const cases = portfolioCases.filter((item) => item.isPublished)
     .sort((a, b) => (a.sortOrder ?? Number.MAX_SAFE_INTEGER) - (b.sortOrder ?? Number.MAX_SAFE_INTEGER));
 
@@ -26,6 +26,6 @@ export default async function Page({ params }: SitePageProps) {
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
-  if (!isLocale(locale)) notFound();
+  if (!isLocale(locale)) {notFound();}
   return pageMetadata(locale, 'works');
 }

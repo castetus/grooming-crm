@@ -8,7 +8,15 @@ import type {
 } from '@/types/entities';
 import { GroomingSessionPhoto } from './grooming-sessions.service';
 
-export function mapClient(row: any): Client {
+type SnakeCase<Key extends string> = Key extends `${infer First}${infer Rest}`
+  ? `${First extends Lowercase<First> ? First : `_${Lowercase<First>}`}${SnakeCase<Rest>}`
+  : Key;
+
+type DatabaseRow<Entity> = {
+  [Key in keyof Entity as Key extends string ? SnakeCase<Key> : Key]: Entity[Key];
+};
+
+export function mapClient(row: DatabaseRow<Client>): Client {
   return {
     id: row.id,
     name: row.name,
@@ -26,7 +34,7 @@ export function mapClient(row: any): Client {
   };
 }
 
-export function mapPet(row: any): Pet {
+export function mapPet(row: DatabaseRow<Pet>): Pet {
   return {
     id: row.id,
     clientId: row.client_id,
@@ -45,7 +53,7 @@ export function mapPet(row: any): Pet {
   };
 }
 
-export function mapGroomer(row: any): Groomer {
+export function mapGroomer(row: DatabaseRow<Groomer>): Groomer {
   return {
     id: row.id,
     name: row.name,
@@ -56,7 +64,7 @@ export function mapGroomer(row: any): Groomer {
   };
 }
 
-export function mapAppointment(row: any): Appointment {
+export function mapAppointment(row: DatabaseRow<Appointment>): Appointment {
   return {
     id: row.id,
 
@@ -91,7 +99,7 @@ export function mapAppointment(row: any): Appointment {
   };
 }
 
-export function mapGroomingSession(row: any): GroomingSession {
+export function mapGroomingSession(row: DatabaseRow<GroomingSession>): GroomingSession {
   return {
     id: row.id,
     appointmentId: row.appointment_id,
@@ -106,7 +114,7 @@ export function mapGroomingSession(row: any): GroomingSession {
   };
 }
 
-export function mapGroomingService(row: any): GroomingService {
+export function mapGroomingService(row: DatabaseRow<GroomingService>): GroomingService {
   return {
     id: row.id,
     name: row.name,
@@ -120,7 +128,7 @@ export function mapGroomingService(row: any): GroomingService {
 }
 
 export function mapGroomingSessionPhoto(
-  row: any,
+  row: DatabaseRow<GroomingSessionPhoto>,
 ): GroomingSessionPhoto {
   return {
     id: row.id,

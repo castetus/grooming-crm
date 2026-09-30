@@ -27,7 +27,17 @@ export type BookingStepLabels = {
   notes: string;
 };
 
-export function BookingStep({ labels, locale, onChange, errors }: { labels: BookingStepLabels; errors: FieldErrors; locale: Locale; onChange: (values: Partial<BookingDetails>) => void }) {
+export function BookingStep({
+  labels,
+  locale,
+  onChange,
+  errors,
+}: {
+  labels: BookingStepLabels;
+  errors: FieldErrors;
+  locale: Locale;
+  onChange: (values: Partial<BookingDetails>) => void;
+}) {
   const id = useId();
   const [date, setDate] = useState<Date>();
   const [calendarOpen, setCalendarOpen] = useState(false);

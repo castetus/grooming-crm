@@ -8,7 +8,16 @@ import { entityPaths, type EntityFormType } from './entity-form/routes';
 
 export type { EntityFormType } from './entity-form/routes';
 
-export function EntityFormLink({ type, actionLabel, mobile = false, className, client, pet, groomingService, appointment }: {
+export function EntityFormLink({
+  type,
+  actionLabel,
+  mobile = false,
+  className,
+  client,
+  pet,
+  groomingService,
+  appointment,
+}: {
   type: EntityFormType;
   actionLabel: string;
   mobile?: boolean;

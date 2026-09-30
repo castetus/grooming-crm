@@ -73,17 +73,17 @@ export function BookingForm({ labels, submitAction, locale = defaultLocale, chil
   const formRef = useRef<HTMLFormElement>(null);
 
   function nextStep() {
-    if (!formRef.current) return;
+    if (!formRef.current) {return;}
     const nextErrors = validateStep(new FormData(formRef.current), activeStep, labels.validation);
     setErrors(nextErrors);
     setAttempted(true);
-    if (Object.keys(nextErrors).length) return;
+    if (Object.keys(nextErrors).length) {return;}
     setAttempted(false);
     setActiveStep(activeStep + 1);
   }
 
   function updateDetails(values: Partial<BookingDetails>) {
-    if (values.date) setErrors((previous) => ({ ...previous, scheduledDate: undefined }));
+    if (values.date) {setErrors((previous) => ({ ...previous, scheduledDate: undefined }));}
     setDetails((previous) => ({ ...previous, ...values }));
   }
 
@@ -96,12 +96,12 @@ export function BookingForm({ labels, submitAction, locale = defaultLocale, chil
       }
     }} onSubmit={(event) => {
       event.preventDefault();
-      if (activeStep !== 2 || pending) return;
+      if (activeStep !== 2 || pending) {return;}
       const formData = new FormData(event.currentTarget);
       const nextErrors = validateStep(formData, 2, labels.validation);
       setErrors(nextErrors);
       setAttempted(true);
-      if (Object.keys(nextErrors).length) return;
+      if (Object.keys(nextErrors).length) {return;}
       startTransition(() => formAction(formData));
     }}>
       <fieldset disabled={pending} className="min-w-0">

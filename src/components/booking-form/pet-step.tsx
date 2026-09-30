@@ -19,7 +19,15 @@ export type PetStepLabels = {
   female: string;
 };
 
-export function PetStep({ labels, onChange, errors }: { labels: PetStepLabels; errors: FieldErrors; onChange: (values: Partial<BookingDetails>) => void }) {
+export function PetStep({
+  labels,
+  onChange,
+  errors,
+}: {
+  labels: PetStepLabels;
+  errors: FieldErrors;
+  onChange: (values: Partial<BookingDetails>) => void;
+}) {
   const id = useId();
 
   return (

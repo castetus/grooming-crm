@@ -18,7 +18,7 @@ export async function getGroomers(): Promise<Groomer[]> {
     .select('*')
     .order('name');
 
-  if (error) throw error;
+  if (error) {throw error;}
 
   return data.map(mapGroomer);
 }
@@ -32,7 +32,7 @@ export async function getGroomerById(id: string): Promise<Groomer | null> {
     .eq('id', id)
     .maybeSingle();
 
-  if (error) throw error;
+  if (error) {throw error;}
 
   return data ? mapGroomer(data) : null;
 }
@@ -52,7 +52,7 @@ export async function createGroomer(
     .select()
     .single();
 
-  if (error) throw error;
+  if (error) {throw error;}
 
   return mapGroomer(data);
 }
@@ -65,9 +65,9 @@ export async function updateGroomer(
 
   const payload: Record<string, unknown> = {};
 
-  if (input.name !== undefined) payload.name = input.name;
-  if (input.phone !== undefined) payload.phone = input.phone;
-  if (input.active !== undefined) payload.active = input.active;
+  if (input.name !== undefined) {payload.name = input.name;}
+  if (input.phone !== undefined) {payload.phone = input.phone;}
+  if (input.active !== undefined) {payload.active = input.active;}
 
   const { data, error } = await supabase
     .from('groomers')
@@ -76,7 +76,7 @@ export async function updateGroomer(
     .select()
     .single();
 
-  if (error) throw error;
+  if (error) {throw error;}
 
   return mapGroomer(data);
 }
@@ -89,5 +89,5 @@ export async function deleteGroomer(id: string): Promise<void> {
     .delete()
     .eq('id', id);
 
-  if (error) throw error;
+  if (error) {throw error;}
 }

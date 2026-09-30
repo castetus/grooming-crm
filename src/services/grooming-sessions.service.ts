@@ -29,7 +29,7 @@ export async function getGroomingSessions(): Promise<GroomingSession[]> {
     .select('*')
     .order('performed_at', { ascending: false });
 
-  if (error) throw error;
+  if (error) {throw error;}
 
   return data.map(mapGroomingSession);
 }
@@ -45,7 +45,7 @@ export async function getGroomingSessionById(
     .eq('id', id)
     .maybeSingle();
 
-  if (error) throw error;
+  if (error) {throw error;}
 
   return data ? mapGroomingSession(data) : null;
 }
@@ -61,7 +61,7 @@ export async function getGroomingSessionsByPetId(
     .eq('pet_id', petId)
     .order('performed_at', { ascending: false });
 
-  if (error) throw error;
+  if (error) {throw error;}
 
   return data.map(mapGroomingSession);
 }
@@ -86,7 +86,7 @@ export async function createGroomingSession(
     .select()
     .single();
 
-  if (error) throw error;
+  if (error) {throw error;}
 
   return mapGroomingSession(data);
 }
@@ -102,19 +102,19 @@ export async function updateGroomingSession(
   if (input.appointmentId !== undefined) {
     payload.appointment_id = input.appointmentId;
   }
-  if (input.petId !== undefined) payload.pet_id = input.petId;
-  if (input.groomerId !== undefined) payload.groomer_id = input.groomerId;
+  if (input.petId !== undefined) {payload.pet_id = input.petId;}
+  if (input.groomerId !== undefined) {payload.groomer_id = input.groomerId;}
   if (input.performedAt !== undefined) {
     payload.performed_at = input.performedAt;
   }
   if (input.locationType !== undefined) {
     payload.location_type = input.locationType;
   }
-  if (input.totalPrice !== undefined) payload.total_price = input.totalPrice;
+  if (input.totalPrice !== undefined) {payload.total_price = input.totalPrice;}
   if (input.groomingDetails !== undefined) {
     payload.grooming_details = input.groomingDetails;
   }
-  if (input.notes !== undefined) payload.notes = input.notes;
+  if (input.notes !== undefined) {payload.notes = input.notes;}
 
   const { data, error } = await supabase
     .from('grooming_sessions')
@@ -123,7 +123,7 @@ export async function updateGroomingSession(
     .select()
     .single();
 
-  if (error) throw error;
+  if (error) {throw error;}
 
   return mapGroomingSession(data);
 }
@@ -136,7 +136,7 @@ export async function deleteGroomingSession(id: string): Promise<void> {
     .delete()
     .eq('id', id);
 
-  if (error) throw error;
+  if (error) {throw error;}
 }
 
 export async function getGroomingSessionsByRange(
@@ -146,13 +146,13 @@ export async function getGroomingSessionsByRange(
   const supabase = await createClient();
 
   const { data, error } = await supabase
-    .from("grooming_sessions")
-    .select("*")
-    .gte("performed_at", from)
-    .lt("performed_at", to)
-    .order("performed_at", { ascending: false });
+    .from('grooming_sessions')
+    .select('*')
+    .gte('performed_at', from)
+    .lt('performed_at', to)
+    .order('performed_at', { ascending: false });
 
-  if (error) throw error;
+  if (error) {throw error;}
 
   return data.map(mapGroomingSession);
 }

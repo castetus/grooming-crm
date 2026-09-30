@@ -17,7 +17,7 @@ export const siteLabels = {
       bookingBot: 'Запись через бота',
       workingHours: 'Режим работы',
       byAppointment: 'По предварительной записи. Дату и время согласуем с вами.',
-      address: 'Адрес'
+      address: 'Адрес',
     },
     navigation: 'Основная навигация',
     openMenu: 'Открыть меню',
@@ -92,7 +92,7 @@ export const siteLabels = {
       bookingBot: 'Bot za zakazivanje',
       workingHours: 'Radno vreme',
       byAppointment: 'Po prethodnom zakazivanju. Datum i vreme dogovaramo sa vama.',
-      address: 'Adresa'
+      address: 'Adresa',
     },
     navigation: 'Glavna navigacija',
     openMenu: 'Otvori meni',

@@ -11,7 +11,7 @@ import { SitePageProps } from './types';
 
 export default async function Home({ params }: SitePageProps) {
   const { locale } = await params;
-  if (!isLocale(locale)) notFound();
+  if (!isLocale(locale)) {notFound();}
   return (
     <div className={styles.page}>
       <main className={styles.main}>
@@ -29,6 +29,6 @@ export default async function Home({ params }: SitePageProps) {
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
-  if (!isLocale(locale)) notFound();
+  if (!isLocale(locale)) {notFound();}
   return pageMetadata(locale, '');
 }

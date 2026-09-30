@@ -58,7 +58,7 @@ export async function createPendingAppointment(
     .select()
     .single();
 
-  if (error) throw error;
+  if (error) {throw error;}
 
   const appointment = mapAppointment(data);
 
@@ -79,7 +79,7 @@ export async function getAppointments(): Promise<Appointment[]> {
     .select('*')
     .order('scheduled_start');
 
-  if (error) throw error;
+  if (error) {throw error;}
 
   return data.map(mapAppointment);
 }
@@ -95,7 +95,7 @@ export async function getAppointmentById(
     .eq('id', id)
     .maybeSingle();
 
-  if (error) throw error;
+  if (error) {throw error;}
 
   return data ? mapAppointment(data) : null;
 }
@@ -113,7 +113,7 @@ export async function getAppointmentsByRange(
     .lt('scheduled_start', to)
     .order('scheduled_start');
 
-  if (error) throw error;
+  if (error) {throw error;}
 
   return data.map(mapAppointment);
 }
@@ -143,7 +143,7 @@ export async function createAppointment(
     .select()
     .single();
 
-  if (error) throw error;
+  if (error) {throw error;}
 
   return mapAppointment(data);
 }
@@ -156,9 +156,9 @@ export async function updateAppointment(
 
   const payload: Record<string, unknown> = {};
 
-  if (input.clientId !== undefined) payload.client_id = input.clientId;
-  if (input.petId !== undefined) payload.pet_id = input.petId;
-  if (input.groomerId !== undefined) payload.groomer_id = input.groomerId;
+  if (input.clientId !== undefined) {payload.client_id = input.clientId;}
+  if (input.petId !== undefined) {payload.pet_id = input.petId;}
+  if (input.groomerId !== undefined) {payload.groomer_id = input.groomerId;}
   if (input.scheduledStart !== undefined) {
     payload.scheduled_start = input.scheduledStart;
   }
@@ -168,13 +168,13 @@ export async function updateAppointment(
   if (input.locationType !== undefined) {
     payload.location_type = input.locationType;
   }
-  if (input.address !== undefined) payload.address = input.address;
+  if (input.address !== undefined) {payload.address = input.address;}
   if (input.estimatedPrice !== undefined) {
     payload.estimated_price = input.estimatedPrice;
   }
-  if (input.status !== undefined) payload.status = input.status;
+  if (input.status !== undefined) {payload.status = input.status;}
 
-  if (input.notes !== undefined) payload.notes = input.notes;
+  if (input.notes !== undefined) {payload.notes = input.notes;}
 
   const { data, error } = await supabase
     .from('appointments')
@@ -183,7 +183,7 @@ export async function updateAppointment(
     .select()
     .single();
 
-  if (error) throw error;
+  if (error) {throw error;}
 
   return mapAppointment(data);
 }
@@ -196,7 +196,7 @@ export async function deleteAppointment(id: string): Promise<void> {
     .delete()
     .eq('id', id);
 
-  if (error) throw error;
+  if (error) {throw error;}
 }
 
 export async function confirmAppointment(
@@ -205,16 +205,16 @@ export async function confirmAppointment(
   const supabase = await createClient();
 
   const { data, error } = await supabase
-    .from("appointments")
+    .from('appointments')
     .update({
-      status: "confirmed",
+      status: 'confirmed',
     })
-    .eq("id", id)
-    .eq("status", "pending")
+    .eq('id', id)
+    .eq('status', 'pending')
     .select()
     .single();
 
-  if (error) throw error;
+  if (error) {throw error;}
 
   return mapAppointment(data);
 }
@@ -225,16 +225,16 @@ export async function cancelAppointment(
   const supabase = await createClient();
 
   const { data, error } = await supabase
-    .from("appointments")
+    .from('appointments')
     .update({
-      status: "cancelled",
+      status: 'cancelled',
     })
-    .eq("id", id)
-    .in("status", ["pending", "confirmed"])
+    .eq('id', id)
+    .in('status', ['pending', 'confirmed'])
     .select()
     .single();
 
-  if (error) throw error;
+  if (error) {throw error;}
 
   return mapAppointment(data);
 }
@@ -245,16 +245,16 @@ export async function restoreAppointment(
   const supabase = await createClient();
 
   const { data, error } = await supabase
-    .from("appointments")
+    .from('appointments')
     .update({
-      status: "confirmed",
+      status: 'confirmed',
     })
-    .eq("id", id)
-    .eq("status", "cancelled")
+    .eq('id', id)
+    .eq('status', 'cancelled')
     .select()
     .single();
 
-  if (error) throw error;
+  if (error) {throw error;}
 
   return mapAppointment(data);
 }
@@ -265,14 +265,14 @@ export async function completeAppointment(
 ): Promise<string> {
   const supabase = await createClient();
 
-  const { data, error } = await supabase.rpc("complete_appointment", {
+  const { data, error } = await supabase.rpc('complete_appointment', {
     target_appointment_id: id,
     session_total_price: input.totalPrice,
     session_grooming_details: input.groomingDetails ?? null,
     session_notes: input.notes ?? null,
   });
 
-  if (error) throw error;
+  if (error) {throw error;}
 
   return data;
 }

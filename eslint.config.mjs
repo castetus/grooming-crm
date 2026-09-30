@@ -9,6 +9,14 @@ const eslintConfig = defineConfig([
     rules: {
       quotes: ['error', 'single', { avoidEscape: true }],
       semi: ['error', 'always'],
+      'max-len': ['error', {
+        code: 120,
+        ignoreComments: true,
+        ignoreStrings: true,
+        ignoreUrls: true,
+      }],
+      'comma-dangle': ['error', 'always-multiline'],
+      curly: ['error', 'all'],
     },
   },
   // Override default ignores of eslint-config-next.

@@ -18,7 +18,7 @@ export default async function SiteLayout({ children, params }: {
   params: Promise<{ locale: string }>;
 }) {
   const { locale } = await params;
-  if (!isLocale(locale)) notFound();
+  if (!isLocale(locale)) {notFound();}
 
   return (
     <html lang={locale}>

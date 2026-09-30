@@ -1,7 +1,7 @@
-import { createClient } from "@/lib/supabase/server";
-import type { GroomingSessionPhoto } from "@/types/entities";
-import { mapGroomingSessionPhoto } from "./mappers";
-import { deleteMedia, uploadGroomingPhoto } from "./media.service";
+import { createClient } from '@/lib/supabase/server';
+import type { GroomingSessionPhoto } from '@/types/entities';
+import { mapGroomingSessionPhoto } from './mappers';
+import { deleteMedia, uploadGroomingPhoto } from './media.service';
 
 export interface CreateGroomingSessionPhotoInput {
   groomingSessionId: string;
@@ -21,12 +21,12 @@ export async function getGroomingSessionPhotos(
   const supabase = await createClient();
 
   const { data, error } = await supabase
-    .from("grooming_session_photos")
-    .select("*")
-    .eq("grooming_session_id", groomingSessionId)
-    .order("sort_order");
+    .from('grooming_session_photos')
+    .select('*')
+    .eq('grooming_session_id', groomingSessionId)
+    .order('sort_order');
 
-  if (error) throw error;
+  if (error) {throw error;}
 
   return data.map(mapGroomingSessionPhoto);
 }
@@ -37,7 +37,7 @@ export async function createGroomingSessionPhoto(
   const supabase = await createClient();
 
   const { data, error } = await supabase
-    .from("grooming_session_photos")
+    .from('grooming_session_photos')
     .insert({
       grooming_session_id: input.groomingSessionId,
       storage_path: input.storagePath,
@@ -47,7 +47,7 @@ export async function createGroomingSessionPhoto(
     .select()
     .single();
 
-  if (error) throw error;
+  if (error) {throw error;}
 
   return mapGroomingSessionPhoto(data);
 }
@@ -69,13 +69,13 @@ export async function updateGroomingSessionPhoto(
   }
 
   const { data, error } = await supabase
-    .from("grooming_session_photos")
+    .from('grooming_session_photos')
     .update(payload)
-    .eq("id", id)
+    .eq('id', id)
     .select()
     .single();
 
-  if (error) throw error;
+  if (error) {throw error;}
 
   return mapGroomingSessionPhoto(data);
 }
@@ -110,19 +110,19 @@ export async function removeGroomingSessionPhoto(
   const supabase = await createClient();
 
   const { data, error } = await supabase
-    .from("grooming_session_photos")
-    .select("storage_path")
-    .eq("id", id)
+    .from('grooming_session_photos')
+    .select('storage_path')
+    .eq('id', id)
     .single();
 
-  if (error) throw error;
+  if (error) {throw error;}
 
   await deleteMedia(data.storage_path);
 
   const { error: deleteError } = await supabase
-    .from("grooming_session_photos")
+    .from('grooming_session_photos')
     .delete()
-    .eq("id", id);
+    .eq('id', id);
 
-  if (deleteError) throw deleteError;
+  if (deleteError) {throw deleteError;}
 }

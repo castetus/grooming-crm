@@ -7,7 +7,7 @@ import { SitePageProps } from '../types';
 
 export default async function Page({ params }: SitePageProps) {
   const { locale } = await params;
-  if (!isLocale(locale)) notFound();
+  if (!isLocale(locale)) {notFound();}
   const labels = siteLabels[locale];
   const address = 'Ђурђа Бранковића 24, Нови Сад 21101';
   const query = encodeURIComponent(`${address}, Србија`);
@@ -63,6 +63,6 @@ export default async function Page({ params }: SitePageProps) {
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
-  if (!isLocale(locale)) notFound();
+  if (!isLocale(locale)) {notFound();}
   return pageMetadata(locale, 'contacts');
 }
