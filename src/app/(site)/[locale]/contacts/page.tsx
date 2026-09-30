@@ -3,10 +3,9 @@ import { notFound } from 'next/navigation';
 
 import { isLocale } from '@/lib/i18n/config';
 import { siteLabels } from '@/lib/i18n/site';
+import { SitePageProps } from '../types';
 
-export default async function Page({ params }: {
-  params: Promise<{ locale: string }>;
-}) {
+export default async function Page({ params }: SitePageProps) {
   const { locale } = await params;
   if (!isLocale(locale)) notFound();
   const labels = siteLabels[locale];

@@ -1,5 +1,6 @@
 'use client';
 
+import Image from 'next/image';
 import { Cancel01Icon, Menu01Icon } from '@hugeicons/core-free-icons';
 import { HugeiconsIcon } from '@hugeicons/react';
 import Link from 'next/link';
@@ -26,6 +27,7 @@ export function SiteHeader({ locale = defaultLocale }: { locale?: Locale }) {
   return (
     <header className="border-b bg-background">
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
+        <Image width={100} height={100} src={'/images/portfolio-placeholder.svg'} alt={'logo'} />
         <nav aria-label={labels.navigation} className="hidden items-center gap-4 text-sm md:flex">
           {links.map(({ href, label }) => (
             <Link key={href} href={href} aria-current={pathname === href ? 'page' : undefined} className="hover:underline aria-[current=page]:font-semibold">

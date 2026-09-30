@@ -7,8 +7,9 @@ import { Card, CardContent } from '@/components/ui/card';
 import { localBusinessJsonLd } from '@/lib/seo/local-business';
 import { pageMetadata } from '@/lib/seo/site';
 import styles from './page.module.css';
+import { SitePageProps } from './types';
 
-export default async function Home({ params }: { params: Promise<{ locale: string }> }) {
+export default async function Home({ params }: SitePageProps) {
   const { locale } = await params;
   if (!isLocale(locale)) notFound();
   return (
