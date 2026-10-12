@@ -1,6 +1,7 @@
 import 'server-only';
 
 import { createClient } from '@supabase/supabase-js';
+import { databaseFetch } from './database-fetch';
 
 export function createAdminClient() {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -15,6 +16,8 @@ export function createAdminClient() {
   }
 
   return createClient(supabaseUrl, serviceRoleKey, {
+    db: { retry: false },
+    global: { fetch: databaseFetch },
     auth: {
       autoRefreshToken: false,
       persistSession: false,
